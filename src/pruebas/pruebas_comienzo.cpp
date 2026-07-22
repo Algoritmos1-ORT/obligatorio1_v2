@@ -1,5 +1,9 @@
 #include <sstream>
 #include "catch_amalgamated.hpp"
+
+#define ANKERL_NANOBENCH_IMPLEMENT
+#include "nanobench.h"
+
 #include "comienzo.hpp"
 #include "func_aux.hpp"
 
@@ -230,8 +234,8 @@ TEST_CASE("PruebaSubconjuntoVector cases", "[PruebaSubconjuntoVector][file:comie
         FrameworkA1::destruir(v2c);
     };
 
-    SECTION("sub1") { check("[100,400,200,300,300,400,400]", "[100,400,200]", false); }
     SECTION("sub2") { check("[1,2,3]", "[1,2,3,4,5,6]", true); }
+    SECTION("sub1") { check("[100,400,200,300,300,400,400]", "[100,400,200]", false); }
     SECTION("sub3") { check("[2,2,2,3,54,6,7]", "[1,2,3,4]", false); }
     SECTION("sub4") { check("[2,2,2,3,54,6,7]", "[7,6,54,6,3,2]", true); }
     SECTION("sub5") { check("[1,1,1,4,2]", "[1,2,5]", false); }
@@ -415,4 +419,34 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort cases", "[PruebaOrdenarVecIntMergeSort][
     SECTION("[1,2,0,10,3,4]") { check("[1,2,0,10,3,4]", "[0,1,2,3,4,10]"); }
     SECTION("[1,2,4,3]") { check("[1,2,4,3]", "[1,2,3,4]"); }
     SECTION("[-2,0,3,1,1]") { check("[-2,0,3,1,1]", "[-2,0,1,1,3]"); }
+}
+
+TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][file:comienzo]")
+{
+    auto benchmark = []()
+    {
+        ankerl::nanobench::Bench bench;
+        bench.output(nullptr); // que no imprima nada
+        std::vector<int> arr;
+
+        for (uint64_t n = 1000; n <= 20'000; n += 1000)
+        {
+            // Set up
+            arr.clear();
+            arr.resize(n);
+            for (int i = 0; i < n; i++)
+                arr[i] = n - i;
+
+            // Benchmark
+            bench.complexityN(arr.size()).run("OrdenarVecIntMergeSort", [&]
+                                              {
+            ordenarVecIntMergeSort(arr.data(), arr.size());
+            ankerl::nanobench::doNotOptimizeAway(arr.data()); });
+        }
+        return bench;
+    };
+
+    auto bench = benchmark();
+    auto bigO = bench.complexityBigO()[0];
+    REQUIRE(bigO.name() == "O(n log n)");
 }
