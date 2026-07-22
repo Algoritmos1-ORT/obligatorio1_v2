@@ -11,13 +11,7 @@ TEST_CASE("PruebaSuma cases", "[PruebaSuma][file:comienzo]")
 {
     auto checkSuma = [](int a, int b, int expected)
     {
-        int received = suma(a, b);
-        if (received != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << received;
-            FAIL(oss.str());
-        }
+        REQUIRE(suma(a, b) == expected);
     };
     SECTION("2 + 7 = 9") { checkSuma(2, 7, 9); }
     SECTION("-8 + 6 = -2") { checkSuma(-8, 6, -2); }
@@ -34,12 +28,7 @@ TEST_CASE("PruebaImprimirTabla cases", "[PruebaImprimirTabla][file:comienzo]")
         std::string s = ss.str();
         if (!s.empty() && s.back() == '\n')
             s.pop_back();
-        if (s != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: \"" << expected << "\" Received: \"" << s << "\"";
-            FAIL(oss.str());
-        }
+        REQUIRE(s == expected);
     };
 
     SECTION("7,0,6")
@@ -64,12 +53,7 @@ TEST_CASE("PruebaSimplificar cases", "[PruebaSimplificar][file:comienzo]")
         std::string s = ss.str();
         if (!s.empty() && s.back() == '\n')
             s.pop_back();
-        if (s != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: \"" << expected << "\" Received: \"" << s << "\"";
-            FAIL(oss.str());
-        }
+        REQUIRE(s == expected);
     };
 
     SECTION("2,7") { check(2, 7, "2/7"); }
@@ -84,7 +68,7 @@ TEST_CASE("PruebaSimplificar cases", "[PruebaSimplificar][file:comienzo]")
     SECTION("-1024,-32") { check(-1024, -32, "32/1"); }
 }
 
-TEST_CASE("PruebaOcuerrencias123Repetidos cases", "[PruebaOcuerrencias123Repetidos][file:comienzo]")
+TEST_CASE("PruebaOcurrencias123Repetidos cases", "[PruebaOcurrencias123Repetidos][file:comienzo]")
 {
     auto check = [](const char *vecStr, int expected)
     {
@@ -92,12 +76,7 @@ TEST_CASE("PruebaOcuerrencias123Repetidos cases", "[PruebaOcuerrencias123Repetid
         int *vec = (int *)FrameworkA1::parsearColeccion(vecStr, largo);
         int *copia = (int *)FrameworkA1::parsearColeccion(vecStr, largo);
         int res = ocurrencias123Repetidos(vec, largo);
-        if (res != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << res;
-            FAIL(oss.str());
-        }
+        REQUIRE(res == expected);
         if (!FrameworkA1::sonIguales(vec, copia, largo))
             FAIL("Function modified input parameters");
         FrameworkA1::destruir(vec);
@@ -124,12 +103,7 @@ TEST_CASE("PruebaMaximoNumero cases", "[PruebaMaximoNumero][file:comienzo]")
         auto old = std::cin.rdbuf(iss.rdbuf());
         int res = maximoNumero(n);
         std::cin.rdbuf(old);
-        if (res != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << res;
-            FAIL(oss.str());
-        }
+        REQUIRE(res == expected);
     };
 
     SECTION("3:2 4 8") { check(3, "2 4 8", 8); }
@@ -143,20 +117,18 @@ TEST_CASE("PruebaMaximoNumero cases", "[PruebaMaximoNumero][file:comienzo]")
 
 TEST_CASE("PruebaOrdenarVecInt cases", "[PruebaOrdenarVecInt][file:comienzo]")
 {
-    auto check = [](const char *vecStr, const char *expectedStr)
+    auto check = [](const char *vecStr, const std::string &expected)
     {
         int largoRes;
         int *vec = (int *)FrameworkA1::parsearColeccion(vecStr, largoRes);
         int largoExp;
-        int *exp = (int *)FrameworkA1::parsearColeccion(expectedStr, largoExp);
+        int *exp = (int *)FrameworkA1::parsearColeccion(expected.c_str(), largoExp);
         ordenarVecInt(vec, largoRes);
         bool ok = FrameworkA1::sonIguales(vec, exp, largoExp);
         if (!ok)
         {
             char *got = FrameworkA1::serializar(vec, largoRes);
-            std::ostringstream oss;
-            oss << "Expected: " << expectedStr << " Received: " << got;
-            FAIL(oss.str());
+            REQUIRE(got == expected);
             delete[] got;
         }
         FrameworkA1::destruir(vec);
@@ -173,22 +145,20 @@ TEST_CASE("PruebaOrdenarVecInt cases", "[PruebaOrdenarVecInt][file:comienzo]")
 
 TEST_CASE("PruebaIntercalarVector cases", "[PruebaIntercalarVector][file:comienzo]")
 {
-    auto check = [](const char *v1s, const char *v2s, const char *expectedS)
+    auto check = [](const char *v1s, const char *v2s, const std::string &expected)
     {
         int l1 = 0;
         int *v1 = (int *)FrameworkA1::parsearColeccion(v1s, l1);
         int l2 = 0;
         int *v2 = (int *)FrameworkA1::parsearColeccion(v2s, l2);
         int lExp = 0;
-        int *exp = (int *)FrameworkA1::parsearColeccion(expectedS, lExp);
+        int *exp = (int *)FrameworkA1::parsearColeccion(expected.c_str(), lExp);
         int *res = intercalarVector(v1, v2, l1, l2);
         bool ok = FrameworkA1::sonIguales(res, exp, lExp);
         if (!ok)
         {
             char *got = FrameworkA1::serializar(res, l1 + l2);
-            std::ostringstream oss;
-            oss << "Expected: " << expectedS << " Received: " << got;
-            FAIL(oss.str());
+            REQUIRE(got == expected);
             delete[] got;
         }
         FrameworkA1::destruir(v1);
