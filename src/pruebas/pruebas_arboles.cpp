@@ -1,0 +1,555 @@
+#include <sstream>
+#include "catch_amalgamated.hpp"
+#include "ejercicios/arboles.hpp"
+#include "func_aux.hpp"
+
+TEST_CASE("PruebaAltura cases", "[PruebaAltura][file:arboles]")
+{
+    auto check = [](const char *inputTree, int expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        int resultado = altura(arbol);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{1,5,2}") { check("{1,5,2}", 2); }
+    SECTION("{1,#,2,#,5}") { check("{1,#,2,#,5}", 3); }
+    SECTION("{}") { check("{}", 0); }
+    SECTION("{1,2,3}") { check("{1,2,3}", 2); }
+    SECTION("{1,3}") { check("{1,3}", 2); }
+    SECTION("{1}") { check("{1}", 1); }
+    SECTION("long-case") { check("{1,2,3,1,#,#,#,#,3,1,2,1,1,#,#,#,#,#,4,1,#,2,2}", 9); }
+    SECTION("all-ones") { check("{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}", 4); }
+    SECTION("skewed-case") { check("{3,3,3,#,1,#,1,#,1,#,1,2,2,#,#,#,#,#,3,1,#,#,4}", 8); }
+    SECTION("{1,3,#,1}") { check("{1,3,#,1}", 3); }
+}
+
+TEST_CASE("PruebaSonIguales cases", "[PruebaSonIguales][file:arboles]")
+{
+    auto check = [](const char *inputA, const char *inputB, bool expected)
+    {
+        int largoA, largoB;
+        NodoAB *a = (NodoAB *)FrameworkA1::parsearColeccion(inputA, largoA);
+        NodoAB *b = (NodoAB *)FrameworkA1::parsearColeccion(inputB, largoB);
+        bool resultado = sonIguales(a, b);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(a);
+        FrameworkA1::destruir(b);
+    };
+
+    SECTION("equal-full") { check("{1,2,3,#,#,4,#,#,5}", "{1,2,3,#,#,4,#,#,5}", true); }
+    SECTION("different-shape") { check("{1,2,3,#,#,4,#,#,5}", "{1,2,3}", false); }
+    SECTION("equal-simple") { check("{1,2,3}", "{1,2,3}", true); }
+    SECTION("different-values") { check("{1,3,2}", "{1,2,3}", false); }
+    SECTION("empty-equals-empty") { check("{}", "{}", true); }
+    SECTION("empty-vs-single") { check("{}", "{1}", false); }
+    SECTION("single-vs-empty") { check("{1}", "{}", false); }
+    SECTION("value-diff") { check("{1,1,#,5,7,1,5,6,1}", "{1,1,#,5,7,1,5,6,2}", false); }
+    SECTION("repeated-shape") { check("{1,#,2,1,1,1,1}", "{1,#,2,1,1,1,1}", true); }
+    SECTION("different-null-placement") { check("{1,#,2,1,1,1,1}", "{1,2,#,1,1,1,1}", false); }
+}
+
+TEST_CASE("PruebaExisteCaminoConSuma cases", "[PruebaExisteCaminoConSuma][file:arboles]")
+{
+    auto check = [](const char *inputTree, int suma, bool expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        bool resultado = existeCaminoConSuma(arbol, suma);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("empty-0") { check("{}", 0, true); }
+    SECTION("3-in-path") { check("{1,2,3}", 4, true); }
+    SECTION("complex-true") { check("{1,2,3,#,#,4,#,#,5}", 3, true); }
+    SECTION("complex-false-4") { check("{1,2,3,#,#,4,#,#,5}", 4, false); }
+    SECTION("complex-false-13") { check("{1,2,3,#,#,4,#,#,5}", 13, false); }
+    SECTION("complex-true-13") { check("{1,2,3,#,#,4,#,#,5}", 13, true); }
+    SECTION("complex-false-14") { check("{1,1,#,5,7,1,5,6,2}", 14, false); }
+    SECTION("complex-false-9") { check("{1,1,#,5,7,1,5,6,2}", 9, false); }
+    SECTION("complex-true-11") { check("{1,1,#,5,7,1,5,6,2}", 11, true); }
+    SECTION("complex-true-12") { check("{1,1,#,5,7,1,5,6,2}", 12, true); }
+    SECTION("negative-true") { check("{-1,1,#,5,7,1,5,6,2}", 10, true); }
+    SECTION("negative-zero-true") { check("{-7,1,#,5,7,1,5,6,2}", 0, true); }
+}
+
+TEST_CASE("PruebaEsArbolBalanceado cases", "[PruebaEsArbolBalanceado][file:arboles]")
+{
+    auto check = [](const char *inputTree, bool expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        bool resultado = esArbolBalanceado(arbol);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{1,5,2}") { check("{1,5,2}", true); }
+    SECTION("{1,#,2,#,3}") { check("{1,#,2,#,3}", false); }
+    SECTION("{}") { check("{}", true); }
+    SECTION("{1,5,2,4}") { check("{1,5,2,4}", true); }
+    SECTION("{1}") { check("{1}", true); }
+    SECTION("{1,2,2,4,3}") { check("{1,2,2,4,3}", true); }
+    SECTION("all-ones") { check("{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}", true); }
+    SECTION("complex-false") { check("{0,-3,1,5,#,#,9,#,#,#,1,#,0,#,1,4,#,#,5}", false); }
+    SECTION("{1, 2, 3, 4, 5, #, 6}") { check("{1, 2, 3, 4, 5, #, 6}", true); }
+    SECTION("{1, 2, 3, 4, 5, 6, 7}") { check("{1, 2, 3, 4, 5, 6, 7}", true); }
+    SECTION("{1,2,3,4,#,#,5}") { check("{1,2,3,4,#,#,5}", true); }
+    SECTION("{1,2,3,4,#,#,5,6,#,#,7}") { check("{1,2,3,4,#,#,5,6,#,#,7}", false); }
+    SECTION("big-true") { check("{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,#,#,#,#,#,#,#,#,#,#,#,16}", true); }
+    SECTION("big-false") { check("{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,#,#,#,#,#,#,#,#,#,#,#,16,#,#,#,#,#,17}", false); }
+    SECTION("{1,2,3,4,#,5}") { check("{1,2,3,4,#,5}", true); }
+}
+
+TEST_CASE("PruebaEnNivel cases", "[PruebaEnNivel][file:arboles]")
+{
+    auto check = [](const char *inputTree, int nivel, const char *expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        NodoLista *resultado = enNivel(arbol, nivel);
+        int largoSolucion;
+        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+        if (!ok)
+        {
+            char *got = FrameworkA1::serializar(resultado);
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << got;
+            delete[] got;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+        FrameworkA1::destruir(resultado);
+        FrameworkA1::destruir(solucion);
+    };
+
+    SECTION("{} level 1") { check("{}", 1, "()"); }
+    SECTION("{1,2,3,4,5,6,7} level 1") { check("{1,2,3,4,5,6,7}", 1, "(1)"); }
+    SECTION("{1,2,3,4,5,6,7} level 2") { check("{1,2,3,4,5,6,7}", 2, "(2,3)"); }
+    SECTION("{1,2,3,4,5,6,7} level 3") { check("{1,2,3,4,5,6,7}", 3, "(4,5,6,7)"); }
+    SECTION("{1,2,3,4,5,6,7} level 4") { check("{1,2,3,4,5,6,7}", 4, "()"); }
+    SECTION("big-tree level 1") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 1, "(1)"); }
+    SECTION("big-tree level 2") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 2, "(2,3)"); }
+    SECTION("big-tree level 3") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 3, "(4,5,6)"); }
+    SECTION("big-tree level 4") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 4, "(7,8,9,10)"); }
+    SECTION("big-tree level 5") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 5, "(11,12,13)"); }
+    SECTION("big-tree level 6") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 6, "(14,15)"); }
+}
+
+TEST_CASE("PruebaCantNodosEntreNiveles cases", "[PruebaCantNodosEntreNiveles][file:arboles]")
+{
+    auto check = [](const char *inputTree, int desde, int hasta, int expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        int resultado = cantNodosEntreNiveles(arbol, desde, hasta);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{1,2,3,4,5,6,7},1,1") { check("{1,2,3,4,5,6,7}", 1, 1, 1); }
+    SECTION("{1,2,3,4,5,6,7},1,2") { check("{1,2,3,4,5,6,7}", 1, 2, 3); }
+    SECTION("{1,2,3,4,5,6,7},1,4") { check("{1,2,3,4,5,6,7}", 1, 4, 7); }
+    SECTION("{1,2,3,4,5,6,7},2,4") { check("{1,2,3,4,5,6,7}", 2, 4, 6); }
+    SECTION("complex-1") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 1, 6, 9); }
+    SECTION("complex-empty") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 5, 4, 0); }
+    SECTION("{} empty") { check("{}", 1, 3, 0); }
+    SECTION("{} one") { check("{}", 1, 1, 0); }
+    SECTION("{} three") { check("{}", 3, 1, 0); }
+    SECTION("{1,2,3,4,#,#,#,5},3,3") { check("{1,2,3,4,#,#,#,5}", 3, 3, 1); }
+}
+
+TEST_CASE("PruebaCamino cases", "[PruebaCamino][file:arboles]")
+{
+    auto check = [](const char *inputTree, int dato, const char *expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        NodoLista *resultado = camino(arbol, dato);
+        int largoSolucion;
+        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+        if (!ok)
+        {
+            char *got = FrameworkA1::serializar(resultado);
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << got;
+            delete[] got;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+        FrameworkA1::destruir(resultado);
+        FrameworkA1::destruir(solucion);
+    };
+
+    SECTION("9") { check("{8,3,10,1,5,9,13}", 9, "(8,10,9)"); }
+    SECTION("root") { check("{4}", 4, "(4)"); }
+    SECTION("left-root") { check("{1,#,2,#,3,#,4,#,5}", 1, "(1)"); }
+    SECTION("parent") { check("{10,5,13,#,6,#,15,#,9,#,30,7}", 13, "(10,13)"); }
+    SECTION("negative") { check("{-80,-130,-1,#,-90,-5,10}", -90, "(-80,-130,-90)"); }
+    SECTION("big-left") { check("{120,53,180,33,88,150,300,15,#,66,100,#,#,#,#,#,18,#,#,#,#,#,31}", 180, "(120, 180)"); }
+    SECTION("zero") { check("{0,-5,8,-10,-4,5,1000000}", 0, "(0)"); }
+    SECTION("deep") { check("{120,53,180,33,88,150,300,15,#,66,100,#,#,#,#,#,18,#,#,#,#,#,31}", 18, "(120, 53, 33, 15, 18)"); }
+    SECTION("deep-right") { check("{10,5,13,#,6,#,15,#,9,#,30,7}", 7, "(10, 5, 6, 9, 7)"); }
+    SECTION("small-right") { check("{0,-5,8,-10,-4,5,1000000}", 5, "(0, 8, 5)"); }
+}
+
+TEST_CASE("PruebaInvertirHastak cases", "[PruebaInvertirHastak][file:arboles]")
+{
+    auto check = [](const char *inputTree, int k, const char *expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        NodoAB *resultado = invertirHastak(arbol, k);
+        int largoSolucion;
+        NodoAB *solucion = (NodoAB *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+        if (!ok)
+        {
+            char *got = FrameworkA1::serializar(resultado);
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << got;
+            delete[] got;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+        FrameworkA1::destruir(resultado);
+        FrameworkA1::destruir(solucion);
+    };
+
+    SECTION("empty") { check("{}", 5, "{}"); }
+    SECTION("k=10") { check("{1,2,3}", 10, "{1,3,2}"); }
+    SECTION("k=0") { check("{1,2,3,4,5,6,7}", 0, "{}"); }
+    SECTION("k=1") { check("{1,2,3,4,5,6,7}", 1, "{1}"); }
+    SECTION("k=2") { check("{1,2,3,4,5,6,7}", 2, "{1,3,2}"); }
+    SECTION("k=3") { check("{1,2,3,4,5,6,7}", 3, "{1,3,2,7,6,5,4}"); }
+    SECTION("skewed-1") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 1, "{1}"); }
+    SECTION("skewed-2") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 2, "{1,3,2}"); }
+    SECTION("skewed-3") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 3, "{1,3,2,6,5,4}"); }
+    SECTION("skewed-4") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 4, "{1,3,2,6,5,4,#,8,7}"); }
+    SECTION("skewed-5") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 5, "{1,3,2,6,5,4,#,8,7,#,#,#,#,9}"); }
+}
+
+TEST_CASE("PruebaBorrarNodoRaiz cases", "[PruebaBorrarNodoRaiz][file:arboles]")
+{
+    auto check = [](const char *inputTree, const char *expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        NodoAB *solucion = (NodoAB *)FrameworkA1::parsearColeccion(expected, largo);
+        borrarNodoRaiz(arbol);
+        bool ok = FrameworkA1::sonIgualesDatos(solucion, arbol);
+        bool esAbb = FrameworkA1::esABB(arbol);
+        if (!ok)
+        {
+            char *got = FrameworkA1::serializar(arbol);
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << got;
+            delete[] got;
+            FAIL(oss.str());
+        }
+        if (!esAbb)
+            FAIL("Result is not an ABB");
+        FrameworkA1::destruir(arbol);
+        FrameworkA1::destruir(solucion);
+    };
+
+    SECTION("leaf") { check("{1}", "{}"); }
+    SECTION("root-with-right") { check("{1,#,2}", "{2}"); }
+    SECTION("root-with-left-right") { check("{3,2,6}", "{2,#,6}"); }
+    SECTION("full-tree") { check("{8,3,10,1,5,9,13}", "{1,3,5,9,10,13}"); }
+    SECTION("balanced") { check("{5,3,7,2,4,6}", "{2,3,6,7,4}"); }
+    SECTION("two-level") { check("{5,3,6,1,4}", "{3,6,1,4}"); }
+    SECTION("skewed-right") { check("{1,#,2,#,3,#,4,#,5}", "{2,3,4,5}"); }
+    SECTION("complex") { check("{10,5,13,#,6,#,15,#,9,#,30,7}", "{5,6,7,9,13,15,30}"); }
+    SECTION("negative") { check("{0,-5,8,-10,-4,5,1000000}", "{-10,-5,-4,5,8,1000000}"); }
+    SECTION("big") { check("{120,53,180,33,88,130,300,15,#,66,100,#,#,#,#,#,18,#,#,#,#,#,31}", "{100,53,180,33,88,130,300,15,#,66,#,#,#,#,#,#,18,#,#,#,31}"); }
+}
+
+TEST_CASE("PruebaSumaABB cases", "[PruebaSumaABB][file:arboles]")
+{
+    auto check = [](const char *inputTree, int n, bool expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        bool resultado = sumaABB(arbol, n);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{3,1,4,0,2},7") { check("{3,1,4,0,2}", 7, true); }
+    SECTION("{},0") { check("{}", 0, false); }
+    SECTION("{2},3") { check("{2}", 3, false); }
+    SECTION("{1},1") { check("{1}", 1, false); }
+    SECTION("{2,#,4},3") { check("{2,#,4}", 3, false); }
+    SECTION("{2,#,4},6") { check("{2,#,4}", 6, true); }
+    SECTION("{5,3,8,2,4,7,10},10") { check("{5,3,8,2,4,7,10}", 10, true); }
+    SECTION("{5,3,8,2,4,7,10},1024") { check("{5,3,8,2,4,7,10}", 1024, false); }
+    SECTION("{5,3,8,2,4,7,10},39") { check("{5,3,8,2,4,7,10}", 39, false); }
+    SECTION("{5,3,8,2,4,7,10},18") { check("{5,3,8,2,4,7,10}", 18, true); }
+    SECTION("{5,3,8,2,4,7,10},12") { check("{5,3,8,2,4,7,10}", 12, true); }
+    SECTION("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20},30") { check("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20}", 30, true); }
+    SECTION("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20},21") { check("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20}", 21, true); }
+    SECTION("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20},23") { check("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20}", 23, true); }
+    SECTION("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20},20") { check("{5,3,8,2,4,7,10,1,#,#,#,6,#,#,20}", 20, false); }
+}
+
+TEST_CASE("PruebaSucesorABB cases", "[PruebaSucesorABB][file:arboles]")
+{
+    auto check = [](const char *inputTree, int n, int expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        NodoAB *copiaArbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        int resultado = sucesor(arbol, n);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        if (!FrameworkA1::sonIgualesDatosForma(arbol, copiaArbol))
+            FAIL("Function modified input parameters");
+        FrameworkA1::destruir(arbol);
+        FrameworkA1::destruir(copiaArbol);
+    };
+
+    SECTION("{2,#,4},2") { check("{2,#,4}", 2, 4); }
+    SECTION("{3,1,4},1") { check("{3,1,4}", 1, 3); }
+    SECTION("{5,3,8,2,4,7,10},5") { check("{5,3,8,2,4,7,10}", 5, 7); }
+    SECTION("{5,3,8,2,4,7,10},3") { check("{5,3,8,2,4,7,10}", 3, 4); }
+    SECTION("complex-10") { check("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4}", 10, 20); }
+    SECTION("complex-3") { check("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4}", 3, 4); }
+    SECTION("complex-7") { check("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4}", 7, 8); }
+    SECTION("complex-8") { check("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4}", 8, 10); }
+    SECTION("{5,2},3") { check("{5,2}", 3, 5); }
+    SECTION("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4},3") { check("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4}", 3, 4); }
+    SECTION("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4},11") { check("{10,7,20,5,8,#,25,3,6,#,#,#,#,1,4}", 11, 20); }
+    SECTION("{5,2},7") { check("{5,2}", 7, -1); }
+    SECTION("{5,2,#,1,3},5") { check("{5,2,#,1,3}", 5, -1); }
+}
+
+TEST_CASE("PruebaNivelMasNodos cases", "[PruebaNivelMasNodos][file:arboles]")
+{
+    auto check = [](const char *inputTree, int nivelHasta, int expected)
+    {
+        int largo;
+        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+        int resultado = nivelMasNodos(arbol, nivelHasta);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{}") { check("{}", 0, 0); }
+    SECTION("{1}") { check("{1}", 1, 1); }
+    SECTION("{1,2,3,4,5,6,7},1") { check("{1,2,3,4,5,6,7}", 1, 1); }
+    SECTION("{1,2,3,4,5,6,7},2") { check("{1,2,3,4,5,6,7}", 2, 2); }
+    SECTION("{1,2,3,4,5,6,7},3") { check("{1,2,3,4,5,6,7}", 3, 3); }
+    SECTION("{1,2,3,4,5,6,7},5") { check("{1,2,3,4,5,6,7}", 5, 3); }
+    SECTION("complex1") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 5, 3); }
+    SECTION("complex2") { check("{1,2,3,#,4,5,6,#,#,#,#,7,8,#,#,#,9}", 2, 2); }
+    SECTION("complex3") { check("{1,2,3,#,4,5,6,7,8,9,10,11,12,#,#,#,13}", 5, 4); }
+    SECTION("complex4") { check("{1,2,3,#,4,5,6,7,8,9,10,11,12,#,#,#,13}", 3, 3); }
+    SECTION("complex5") { check("{1,2,3,#,#,4,6}", 3, 2); }
+    SECTION("complex6") { check("{1,2,3,#,#,4,6,5,11}", 3, 2); }
+}
+
+TEST_CASE("PruebaAlturaAG cases", "[PruebaAlturaAG][file:arboles]")
+{
+    auto check = [](const char *inputTree, int expected)
+    {
+        int largo;
+        NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
+        int resultado = alturaAG(arbol);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{{}}") { check("{{}}", 0); }
+    SECTION("{{1,2,5,#,#,3,#,4}}") { check("{{1,2,5,#,#,3,#,4}}", 3); }
+    SECTION("{{1,2,5,#,6,11,#,#,#,3,#,4,7,#,8,#,9,#,10}}") { check("{{1,2,5,#,6,11,#,#,#,3,#,4,7,#,8,#,9,#,10}}", 4); }
+    SECTION("{{10}}") { check("{{10}}", 1); }
+    SECTION("{{1,2,#,3,#,4,5,#,6,#,7,8}}") { check("{{1,2,#,3,#,4,5,#,6,#,7,8}}", 4); }
+    SECTION("{{1,2,#,3,#,4,#,5,#,6,#,7,#,8,#,9}}") { check("{{1,2,#,3,#,4,#,5,#,6,#,7,#,8,#,9}}", 2); }
+    SECTION("{{1,2,3,4,5}}") { check("{{1,2,3,4,5}}", 5); }
+    SECTION("{{1,2,3,4,5,#,6}}") { check("{{1,2,3,4,5,#,6}}", 5); }
+    SECTION("{{1,2,3,4,#,#,#,5,6,7}}") { check("{{1,2,3,4,#,#,#,5,6,7}}", 4); }
+}
+
+TEST_CASE("PruebaSumaPorNiveles cases", "[PruebaSumaPorNiveles][file:arboles]")
+{
+    auto check = [](const char *inputTree, int expected)
+    {
+        int largo;
+        NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
+        int resultado = sumaPorNiveles(arbol);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{{}}") { check("{{}}", 0); }
+    SECTION("{{6}}") { check("{{6}}", -6); }
+    SECTION("{{6,2}}") { check("{{6,2}}", -4); }
+    SECTION("{{6,#,4,#,1}}") { check("{{6,#,4,#,1}}", -11); }
+    SECTION("{{90,60,10,40,#,45}}") { check("{{90,60,10,40,#,45}}", 45); }
+    SECTION("{{90,60,10,40,#,45,12,#,#,3,#,2,#,43}}") { check("{{90,60,10,40,#,45,12,#,#,3,#,2,#,43}}", 81); }
+    SECTION("{{1,2,3,#,1}}") { check("{{1,2,3,#,1}}", -3); }
+    SECTION("{{1,2,5,#,#,3,#,4}}") { check("{{1,2,5,#,#,3,#,4}}", 3); }
+    SECTION("{{1,2,5,#,20,#,#,3,#,4,7}}") { check("{{1,2,5,#,20,#,#,3,#,4,7}}", -24); }
+    SECTION("{{1,-7,5,#,20,#,#,3,#,4,7,33}}") { check("{{1,-7,5,#,20,#,#,3,#,4,7,33}}", 0); }
+    SECTION("{{1,-7,5,#,15,#,#,3,#,4,8,34}}") { check("{{1,-7,5,#,15,#,#,3,#,4,8,34}}", 5); }
+}
+
+TEST_CASE("PruebaEsPrefijo cases", "[PruebaEsPrefijo][file:arboles]")
+{
+    auto check = [](const char *inputTree, const char *inputList, bool expected)
+    {
+        int largoTree, largoList;
+        NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largoTree);
+        NodoLista *camino = (NodoLista *)FrameworkA1::parsearColeccion(inputList, largoList);
+        bool resultado = esPrefijo(arbol, camino);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+        FrameworkA1::destruir(camino);
+    };
+
+    SECTION("empty-tree-empty-list") { check("{{}}", "()", true); }
+    SECTION("single-tree-empty-list") { check("{{1}}", "()", true); }
+    SECTION("empty-tree-nonempty") { check("{{}}", "(1,2,3,4)", false); }
+    SECTION("prefix-true") { check("{{1,2,5,#,#,3,7,4}}", "(1,2,5)", true); }
+    SECTION("prefix-false-1") { check("{{2,4,6,#,8}}", "(2,3,6,8)", false); }
+    SECTION("prefix-false-2") { check("{{2,4,6,#,8}}", "(2,4,6,8)", false); }
+    SECTION("prefix-true-3") { check("{{1,2,3,#,#,#,1}}", "(1,2,3)", true); }
+    SECTION("prefix-false-4") { check("{{1,2,3,#,1}}", "(1,2,3,4)", false); }
+    SECTION("empty-prefix-true") { check("{{1,-7,5,#,20,#,#,3,#,4,7,33}}", "()", true); }
+    SECTION("false-again") { check("{{1,-7,5,#,20,#,#,3,#,4,7,33}}", "(1,-7,4)", false); }
+    SECTION("true-mid") { check("{{1,-7,5,#,20,#,3,4,7,33}}", "(1,-7,3,4,7)", true); }
+    SECTION("true-tail") { check("{{1,-7,5,#,20,#,#,3,#,4,7,33}}", "(1,4,7,33)", true); }
+    SECTION("false-tail") { check("{{1,-7,5,#,20,#,#,3,#,4,7,33}}", "(1,-7,5,20)", false); }
+    SECTION("true-late") { check("{{1,-7,5,#,20,#,#,3,#,#,4,7,33}}", "(4,7,33)", true); }
+    SECTION("true-deep") { check("{{1,-7,5,#,20,#,#,3,#,#,4,7,33,#,88,45}}", "(4,7,88,45)", true); }
+    SECTION("true-nested") { check("{{5,7,1,#,#,3,8,#,4,#,#,1,#,#,10,9,1,#,#,3,2}}", "(10,3,2)", true); }
+    SECTION("false-nested") { check("{{5,7,1,#,#,3,8,#,4,#,#,1,#,#,10,9,1,#,#,3,2}}", "(10,9,1,1)", false); }
+}
+
+TEST_CASE("PruebaCaminoAG cases", "[PruebaCaminoAG][file:arboles]")
+{
+    auto check = [](const char *inputTree, int dato, const char *expected)
+    {
+        int largoTree;
+        NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largoTree);
+        NodoLista *resultado = caminoAG(arbol, dato);
+        int largoSolucion;
+        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+        if (!ok)
+        {
+            char *got = FrameworkA1::serializar(resultado);
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << got;
+            delete[] got;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+        FrameworkA1::destruir(resultado);
+        FrameworkA1::destruir(solucion);
+    };
+
+    SECTION("single-1") { check("{{1}}", 1, "(1)"); }
+    SECTION("single-5") { check("{{1}}", 5, "()"); }
+    SECTION("small") { check("{{1,2,3,#,4}}", 4, "(1,2,4)"); }
+    SECTION("simple") { check("{{1,2,4}}", 4, "(1,2,4)"); }
+    SECTION("path-1") { check("{{1,2,4,#,#,3,5}}", 5, "(1,3,5)"); }
+    SECTION("path-2") { check("{{1,2,4,#,#,3,5,#,#,6,7}}", 6, "(1,6)"); }
+    SECTION("deep-9") { check("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9}}", 9, "(1,7,9)"); }
+    SECTION("deep-4") { check("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9}}", 4, "(1,2,4)"); }
+    SECTION("big-13") { check("{{0,1,2,3,#,4,5,#,#,#,6,#,7,8,#,9,#,#,#,10,11,12,#,13}}", 13, "(0,10,11,13)"); }
+    SECTION("big-5") { check("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9}}", 5, "(1,2,4,5)"); }
+    SECTION("big-7") { check("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9}}", 7, "(1,7)"); }
+    SECTION("nested") { check("{{5,7,1,#,#,3,8,#,4,#,#,1,#,#,10,9,1,#,#,3,2}}", 2, "(10,3,2)"); }
+    SECTION("repeat-9") { check("{{1,2,3,#,4,9,#,#,#,6,#,7,8,#,9}}", 9, "(1,2,4,9)"); }
+    SECTION("repeat-4") { check("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,4}}", 4, "(1,2,4)"); }
+}
+
+TEST_CASE("PruebaNivelConMasNodosAG cases", "[PruebaNivelConMasNodosAG][file:arboles]")
+{
+    auto check = [](const char *inputTree, int expected)
+    {
+        int largo;
+        NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
+        int resultado = nivelConMasNodosAG(arbol);
+        if (resultado != expected)
+        {
+            std::ostringstream oss;
+            oss << "Expected: " << expected << " Received: " << resultado;
+            FAIL(oss.str());
+        }
+        FrameworkA1::destruir(arbol);
+    };
+
+    SECTION("{{1}}") { check("{{1}}", 1); }
+    SECTION("{{1,2,#,3}}") { check("{{1,2,#,3}}", 2); }
+    SECTION("{{1,2,4,#,#,3,5}}") { check("{{1,2,4,#,#,3,5}}", 2); }
+    SECTION("{{1,2,3,#,4,#,5,#,6}}") { check("{{1,2,3,#,4,#,5,#,6}}", 3); }
+    SECTION("{{1,2,4,#,#,3,5,#,#,6,#,7,8,#,9,#,10,#,11}}") { check("{{1,2,4,#,#,3,5,#,#,6,#,7,8,#,9,#,10,#,11}}", 3); }
+    SECTION("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9}}") { check("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9}}", 3); }
+    SECTION("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9,#,#,10,#,11}}") { check("{{1,2,3,#,4,5,#,#,#,6,#,7,8,#,9,#,#,10,#,11}}", 2); }
+    SECTION("{{1,2,3,#,4,#,5,#,6,#,#,7,#,9,#,10}}") { check("{{1,2,3,#,4,#,5,#,6,#,#,7,#,9,#,10}}", 2); }
+    SECTION("{{1,2,3,#,4,#,5,#,6,#,#,7,8,#,9,#,10}}") { check("{{1,2,3,#,4,#,5,#,6,#,#,7,8,#,9,#,10}}", 3); }
+    SECTION("{{1,2,4,#,#,3,5,11,#,12,#,13,#,14,#,15,#,#,#,6,#,7,8,#,9}}") { check("{{1,2,4,#,#,3,5,11,#,12,#,13,#,14,#,15,#,#,#,6,#,7,8,#,9}}", 4); }
+    SECTION("{{1,2,4,#,#,3,5,#,#,#,6,7,#,#,8,#,9}}") { check("{{1,2,4,#,#,3,5,#,#,#,6,7,#,#,8,#,9}}", 1); }
+}
