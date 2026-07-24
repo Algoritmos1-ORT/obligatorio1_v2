@@ -9,13 +9,7 @@ TEST_CASE("PruebaAltura cases", "[PruebaAltura][file:arboles]")
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        int resultado = altura(arbol);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        REQUIRE (altura(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
 
@@ -38,13 +32,7 @@ TEST_CASE("PruebaSonIguales cases", "[PruebaSonIguales][file:arboles]")
         int largoA, largoB;
         NodoAB *a = (NodoAB *)FrameworkA1::parsearColeccion(inputA, largoA);
         NodoAB *b = (NodoAB *)FrameworkA1::parsearColeccion(inputB, largoB);
-        bool resultado = sonIguales(a, b);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        REQUIRE(sonIguales(a, b) == expected);
         FrameworkA1::destruir(a);
         FrameworkA1::destruir(b);
     };
@@ -67,21 +55,15 @@ TEST_CASE("PruebaExisteCaminoConSuma cases", "[PruebaExisteCaminoConSuma][file:a
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        bool resultado = existeCaminoConSuma(arbol, suma);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        REQUIRE(existeCaminoConSuma(arbol, suma) == expected);
         FrameworkA1::destruir(arbol);
     };
 
     SECTION("empty-0") { check("{}", 0, true); }
     SECTION("3-in-path") { check("{1,2,3}", 4, true); }
     SECTION("complex-true") { check("{1,2,3,#,#,4,#,#,5}", 3, true); }
-    SECTION("complex-false-4") { check("{1,2,3,#,#,4,#,#,5}", 4, false); }
-    SECTION("complex-false-13") { check("{1,2,3,#,#,4,#,#,5}", 13, false); }
+    SECTION("complex-false-4") { check("{1,2,3,#,#,4,#,#,5}", 2, false); }
+    SECTION("complex-false-13") { check("{1,2,3,#,#,4,#,#,5}", 4, false); }
     SECTION("complex-true-13") { check("{1,2,3,#,#,4,#,#,5}", 13, true); }
     SECTION("complex-false-14") { check("{1,1,#,5,7,1,5,6,2}", 14, false); }
     SECTION("complex-false-9") { check("{1,1,#,5,7,1,5,6,2}", 9, false); }
@@ -97,13 +79,7 @@ TEST_CASE("PruebaEsArbolBalanceado cases", "[PruebaEsArbolBalanceado][file:arbol
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        bool resultado = esArbolBalanceado(arbol);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        REQUIRE(esArbolBalanceado(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
 
@@ -152,12 +128,12 @@ TEST_CASE("PruebaEnNivel cases", "[PruebaEnNivel][file:arboles]")
     SECTION("{1,2,3,4,5,6,7} level 2") { check("{1,2,3,4,5,6,7}", 2, "(2,3)"); }
     SECTION("{1,2,3,4,5,6,7} level 3") { check("{1,2,3,4,5,6,7}", 3, "(4,5,6,7)"); }
     SECTION("{1,2,3,4,5,6,7} level 4") { check("{1,2,3,4,5,6,7}", 4, "()"); }
-    SECTION("big-tree level 1") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 1, "(1)"); }
-    SECTION("big-tree level 2") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 2, "(2,3)"); }
-    SECTION("big-tree level 3") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 3, "(4,5,6)"); }
-    SECTION("big-tree level 4") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 4, "(7,8,9,10)"); }
-    SECTION("big-tree level 5") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 5, "(11,12,13)"); }
-    SECTION("big-tree level 6") { check("{1,2,3,4,5,6,7,8,9,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 6, "(14,15)"); }
+    SECTION("big-tree level 1") { check("{1,2,3,4,#,5,6,#,7,8,9,#,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 1, "(1)"); }
+    SECTION("big-tree level 2") { check("{1,2,3,4,#,5,6,#,7,8,9,#,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 2, "(2,3)"); }
+    SECTION("big-tree level 3") { check("{1,2,3,4,#,5,6,#,7,8,9,#,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 3, "(4,5,6)"); }
+    SECTION("big-tree level 4") { check("{1,2,3,4,#,5,6,#,7,8,9,#,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 4, "(7,8,9,10)"); }
+    SECTION("big-tree level 5") { check("{1,2,3,4,#,5,6,#,7,8,9,#,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 5, "(11,12,13)"); }
+    SECTION("big-tree level 6") { check("{1,2,3,4,#,5,6,#,7,8,9,#,10,#,#,11,#,#,#,12,13,#,#,14,#,#,15}", 6, "(14,15)"); }
 }
 
 TEST_CASE("PruebaCantNodosEntreNiveles cases", "[PruebaCantNodosEntreNiveles][file:arboles]")
@@ -166,13 +142,7 @@ TEST_CASE("PruebaCantNodosEntreNiveles cases", "[PruebaCantNodosEntreNiveles][fi
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        int resultado = cantNodosEntreNiveles(arbol, desde, hasta);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        REQUIRE(cantNodosEntreNiveles(arbol, desde, hasta) == expected);
         FrameworkA1::destruir(arbol);
     };
 
@@ -531,13 +501,7 @@ TEST_CASE("PruebaNivelConMasNodosAG cases", "[PruebaNivelConMasNodosAG][file:arb
     {
         int largo;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-        int resultado = nivelConMasNodosAG(arbol);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        REQUIRE(nivelConMasNodosAG(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
 
