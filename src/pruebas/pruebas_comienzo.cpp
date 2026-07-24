@@ -397,9 +397,10 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][
     {
         ankerl::nanobench::Bench bench;
         bench.output(nullptr); // que no imprima nada
+        bench.minEpochTime(std::chrono::milliseconds(10)); // mejoramos la precisión de la medición
         std::vector<int> arr;
 
-        for (uint64_t n = 1000; n <= 20'000; n += 1000)
+        for (uint64_t n = 100; n <= 5'000; n += 200)
         {
             // Set up
             arr.clear();
@@ -418,5 +419,6 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][
 
     auto bench = benchmark();
     auto bigO = bench.complexityBigO()[0];
+    
     REQUIRE(bigO.name() == "O(n log n)");
 }
