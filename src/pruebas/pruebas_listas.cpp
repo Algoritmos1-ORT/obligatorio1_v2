@@ -3,75 +3,111 @@
 #include "ejercicios/listas.hpp"
 #include "func_aux.hpp"
 
+void checkLeak()
+{
+    auto leaked = FrameworkA1::hayLeak();
+    FrameworkA1::detenerMemTracking();
+    if (leaked)
+    {
+        ostringstream oss;
+        oss << "Se perdieron " << leaked << " bytes";
+        FAIL_CHECK(oss.str());
+    }
+}
+
+template <typename Funcion>
+void checkListaNueva(Funcion funcion, const char *inputLista, const char *expected)
+{
+    int largo;
+    NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
+    NodoLista *copiaLista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
+
+    int largoSolucion;
+    NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+
+    FrameworkA1::comenzarMemTracking();
+    NodoLista *resultado = funcion(lista);
+
+    bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+    bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
+    bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista);
+
+    if (!ok)
+    {
+        char *got = FrameworkA1::serializar(resultado);
+        FrameworkA1::detenerMemTracking(false); // no queremos que se limpie 'got'
+        REQUIRE(got == expected);               // HACK: Siempre falso, pero muestra bien los strings
+        // La ejecución termina aquí, no se ejecuta el resto de los checks
+        // (la memoria queda colgada, pero no importa)
+    }
+
+    FrameworkA1::destruir(lista);
+    FrameworkA1::destruir(copiaLista);
+    FrameworkA1::destruir(solucion);
+    FrameworkA1::destruir(resultado);
+    checkLeak();
+
+    if (!parametrosNoModificados)
+        FAIL_CHECK("La función modifica los parámetros de entrada");
+    if (!noComparteMemoria)
+        FAIL_CHECK("El resultado comparte memoria con la lista de entrada");
+}
+
+template <typename Funcion>
+void checkListaModificada(Funcion funcion, const char *inputLista, const char *expected)
+{
+    int largo;
+    NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
+
+    int largoSolucion;
+    NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+
+    FrameworkA1::comenzarMemTracking();
+    funcion(lista);
+
+    bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
+    if (!ok)
+    {
+        char *got = FrameworkA1::serializar(lista);
+        FrameworkA1::detenerMemTracking(false); // no queremos que se limpie 'got'
+        REQUIRE(got == expected);               // HACK: Siempre falso, pero muestra bien los strings
+    }
+
+    FrameworkA1::destruir(lista);
+    FrameworkA1::destruir(solucion);
+    checkLeak();
+}
+
 TEST_CASE("PruebaInvertirParcial cases", "[PruebaInvertirParcial][file:listas]")
 {
-    auto check = [](const char *inputLista, const char *expected)
+    auto check = [](const char *input, const char *expected)
     {
-        int largo;
-        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *copiaLista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *resultado = invertirParcial(lista);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
-        bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista);
-
-        if (!ok)
+        ostringstream oss;
+        oss << input << " -> " << expected;
+        SECTION(oss.str())
         {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
+            checkListaNueva(invertirParcial, input, expected);
         }
-        if (!parametrosNoModificados)
-            FAIL("Function modified input parameters");
-        if (!noComparteMemoria)
-            FAIL("Result shares memory with input list");
-
-        FrameworkA1::destruir(lista);
-        FrameworkA1::destruir(copiaLista);
-        FrameworkA1::destruir(solucion);
-        FrameworkA1::destruir(resultado);
     };
 
-    SECTION("(1) -> ()") { check("(1)", "()"); }
-    SECTION("(1,2,3,4) -> (3,2,1)") { check("(1,2,3,4)", "(3,2,1)"); }
-    SECTION("(-1,-2) -> (-1)") { check("(-1,-2)", "(-1)"); }
-    SECTION("(1,2,3,4,3,2,1,0) -> (1,2,3,4,3,2,1)") { check("(1,2,3,4,3,2,1,0)", "(1,2,3,4,3,2,1)"); }
-    SECTION("(1,2,3,4,3,2,1) -> (2,3,4,3,2,1)") { check("(1,2,3,4,3,2,1)", "(2,3,4,3,2,1)"); }
-    SECTION("(1,1,1) -> (1,1)") { check("(1,1,1)", "(1,1)"); }
-    SECTION("(0,1,2,3,4,5,6,7,8,9,10) -> (9,8,7,6,5,4,3,2,1,0)") { check("(0,1,2,3,4,5,6,7,8,9,10)", "(9,8,7,6,5,4,3,2,1,0)"); }
-    SECTION("(0,1,0,5,0,1,0) -> (1,0,5,0,1,0)") { check("(0,1,0,5,0,1,0)", "(1,0,5,0,1,0)"); }
-    SECTION("(8,9,5,1) -> (5,9,8)") { check("(8,9,5,1)", "(5,9,8)"); }
+    check("(1)", "()");
+    check("(1,2,3,4)", "(3,2,1)");
+    check("(-1,-2)", "(-1)");
+    check("(1,2,3,4,3,2,1,0)", "(1,2,3,4,3,2,1)");
+    check("(1,2,3,4,3,2,1)", "(2,3,4,3,2,1)");
+    check("(1,1,1)", "(1,1)");
+    check("(0,1,2,3,4,5,6,7,8,9,10)", "(9,8,7,6,5,4,3,2,1,0)");
+    check("(0,1,0,5,0,1,0)", "(1,0,5,0,1,0)");
+    check("(8,9,5,1)", "(5,9,8)");
 }
 
 TEST_CASE("PruebaEliminarNesimoDesdeElFinal cases", "[PruebaEliminarNesimoDesdeElFinal][file:listas]")
 {
     auto check = [](const char *inputLista, int n, const char *expected)
     {
-        int largo;
-        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        eliminarNesimoDesdeElFinal(lista, n);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(lista);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-
-        FrameworkA1::destruir(lista);
-        FrameworkA1::destruir(solucion);
+        auto f = [n](NodoLista *&input) mutable
+        { eliminarNesimoDesdeElFinal(input, n); };
+        checkListaModificada(f, inputLista, expected);
     };
 
     SECTION("() n=50") { check("()", 50, "()"); }
@@ -89,58 +125,25 @@ TEST_CASE("PruebaEliminarNesimoDesdeElFinal cases", "[PruebaEliminarNesimoDesdeE
 
 TEST_CASE("PruebaListaOrdenadaInsertionSort cases", "[PruebaListaOrdenadaInsertionSort][file:listas]")
 {
-    auto check = [](const char *inputLista, const char *expected)
-    {
-        int largo;
-        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *copiaLista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *resultado = listaOrdenadaInsertionSort(lista);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
-        bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista);
-
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-        if (!parametrosNoModificados)
-            FAIL("Function modified input parameters");
-        if (!noComparteMemoria)
-            FAIL("Result shares memory with input list");
-
-        FrameworkA1::destruir(lista);
-        FrameworkA1::destruir(copiaLista);
-        FrameworkA1::destruir(solucion);
-        FrameworkA1::destruir(resultado);
-    };
-
-    SECTION("()") { check("()", "()"); }
-    SECTION("(4)") { check("(4)", "(4)"); }
-    SECTION("(1,1,1)") { check("(1,1,1)", "(1,1,1)"); }
-    SECTION("(1,2,3)") { check("(1,2,3)", "(1,2,3)"); }
-    SECTION("(1,4,2)") { check("(1,4,2)", "(1,2,4)"); }
-    SECTION("(2,3,1)") { check("(2,3,1)", "(1,2,3)"); }
-    SECTION("(-2,-3,-1)") { check("(-2,-3,-1)", "(-3,-2,-1)"); }
-    SECTION("(1,1,4,1,3,8)") { check("(1,1,4,1,3,8)", "(1,1,1,3,4,8)"); }
-    SECTION("(-2,3,1)") { check("(-2,3,1)", "(-2,1,3)"); }
-    SECTION("(3,5,2,1,0)") { check("(3,5,2,1,0)", "(0,1,2,3,5)"); }
-    SECTION("(9,2,2,5,1)") { check("(9,2,2,5,1)", "(1,2,2,5,9)"); }
-    SECTION("(3,1,-1,1,0)") { check("(3,1,-1,1,0)", "(-1,0,1,1,3)"); }
-    SECTION("(10..-2)") { check("(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
-    SECTION("(7,3,7,10,-1,1,-6,0,-10,2,1,2)") { check("(7,3,7,10,-1,1,-6,0,-10,2,1,2)", "(-10,-6,-1,0,1,1,2,2,3,7,7,10)"); }
-    SECTION("(10..-2)-duplicate") { check("(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
-    SECTION("(8,7,5,2,-3,-1)") { check("(8,7,5,2,-3,-1)", "(-3,-1,2,5,7,8)"); }
-    SECTION("(1,2,0,10,3,4)") { check("(1,2,0,10,3,4)", "(0,1,2,3,4,10)"); }
-    SECTION("(1,2,4,3)") { check("(1,2,4,3)", "(1,2,3,4)"); }
-    SECTION("(-2,0,3,1,1)") { check("(-2,0,3,1,1)", "(-2,0,1,1,3)"); }
+    SECTION("()") { checkListaNueva(listaOrdenadaInsertionSort, "()", "()"); }
+    SECTION("(4)") { checkListaNueva(listaOrdenadaInsertionSort, "(4)", "(4)"); }
+    SECTION("(1,1,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,1,1)", "(1,1,1)"); }
+    SECTION("(1,2,3)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,2,3)", "(1,2,3)"); }
+    SECTION("(1,4,2)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,4,2)", "(1,2,4)"); }
+    SECTION("(2,3,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(2,3,1)", "(1,2,3)"); }
+    SECTION("(-2,-3,-1)") { checkListaNueva(listaOrdenadaInsertionSort, "(-2,-3,-1)", "(-3,-2,-1)"); }
+    SECTION("(1,1,4,1,3,8)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,1,4,1,3,8)", "(1,1,1,3,4,8)"); }
+    SECTION("(-2,3,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(-2,3,1)", "(-2,1,3)"); }
+    SECTION("(3,5,2,1,0)") { checkListaNueva(listaOrdenadaInsertionSort, "(3,5,2,1,0)", "(0,1,2,3,5)"); }
+    SECTION("(9,2,2,5,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(9,2,2,5,1)", "(1,2,2,5,9)"); }
+    SECTION("(3,1,-1,1,0)") { checkListaNueva(listaOrdenadaInsertionSort, "(3,1,-1,1,0)", "(-1,0,1,1,3)"); }
+    SECTION("(10..-2)") { checkListaNueva(listaOrdenadaInsertionSort, "(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
+    SECTION("(7,3,7,10,-1,1,-6,0,-10,2,1,2)") { checkListaNueva(listaOrdenadaInsertionSort, "(7,3,7,10,-1,1,-6,0,-10,2,1,2)", "(-10,-6,-1,0,1,1,2,2,3,7,7,10)"); }
+    SECTION("(10..-2)-duplicate") { checkListaNueva(listaOrdenadaInsertionSort, "(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
+    SECTION("(8,7,5,2,-3,-1)") { checkListaNueva(listaOrdenadaInsertionSort, "(8,7,5,2,-3,-1)", "(-3,-1,2,5,7,8)"); }
+    SECTION("(1,2,0,10,3,4)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,2,0,10,3,4)", "(0,1,2,3,4,10)"); }
+    SECTION("(1,2,4,3)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,2,4,3)", "(1,2,3,4)"); }
+    SECTION("(-2,0,3,1,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(-2,0,3,1,1)", "(-2,0,1,1,3)"); }
 }
 
 TEST_CASE("PruebaListaOrdenadaSelectionSort cases", "[PruebaListaOrdenadaSelectionSort][file:listas]")
@@ -218,9 +221,9 @@ TEST_CASE("PruebaIntercalarIter cases", "[PruebaIntercalarIter][file:listas]")
             FAIL(msg);
         }
         if (!parametrosNoModificados)
-            FAIL("Function modified input parameters");
+            FAIL("La función modifica los parámetros de entrada");
         if (!noComparteMemoria)
-            FAIL("Result shares memory with input lists");
+            FAIL("El resultado comparte memoria con las listas de entrada");
 
         FrameworkA1::destruir(lista1);
         FrameworkA1::destruir(lista2);
@@ -271,9 +274,9 @@ TEST_CASE("PruebaIntercalarRec cases", "[PruebaIntercalarRec][file:listas]")
             FAIL(msg);
         }
         if (!parametrosNoModificados)
-            FAIL("Function modified input parameters");
+            FAIL("La función modifica los parámetros de entrada");
         if (!noComparteMemoria)
-            FAIL("Result shares memory with input lists");
+            FAIL("El resultado comparte memoria con las listas de entrada");
 
         FrameworkA1::destruir(lista1);
         FrameworkA1::destruir(lista2);
@@ -321,9 +324,9 @@ TEST_CASE("PruebaInsComFin cases", "[PruebaInsComFin][file:listas]")
             FAIL(msg);
         }
         if (!parametrosNoModificados)
-            FAIL("Function modified input parameters");
+            FAIL("La función modifica los parámetros de entrada");
         if (!noComparteMemoria)
-            FAIL("Result shares memory with input list");
+            FAIL("El resultado comparte memoria con la lista de entrada");
 
         FrameworkA1::destruir(lista);
         FrameworkA1::destruir(copiaLista);
@@ -371,9 +374,9 @@ TEST_CASE("PruebaEXOR cases", "[PruebaEXOR][file:listas]")
             FAIL(msg);
         }
         if (!parametrosNoModificados)
-            FAIL("Function modified input parameters");
+            FAIL("La función modifica los parámetros de entrada");
         if (!noComparteMemoria)
-            FAIL("Result shares memory with input lists");
+            FAIL("El resultado comparte memoria con las listas de entrada");
 
         FrameworkA1::destruir(lista1);
         FrameworkA1::destruir(lista2);
@@ -454,7 +457,7 @@ TEST_CASE("PruebaPalindromo cases", "[PruebaPalindromo][file:listas]")
             FAIL(oss.str());
         }
         if (!parametrosNoModificados)
-            FAIL("Function modified input parameters");
+            FAIL("La función modifica los parámetros de entrada");
 
         FrameworkA1::destruir(lista);
         FrameworkA1::destruir(copiaLista);
@@ -522,23 +525,29 @@ TEST_CASE("PruebaMoverNodo cases", "[PruebaMoverNodo][file:listas]")
     auto check = [](const char *inputListaOriginal, unsigned int inicial, unsigned int final, const char *expected)
     {
         int largo;
+
         NodoLista *listaOriginal = (NodoLista *)FrameworkA1::parsearColeccion(inputListaOriginal, largo);
         NodoLista *resultadoEsperado = (NodoLista *)FrameworkA1::parsearColeccion(expected, largo);
 
+        FrameworkA1::comenzarMemTracking();
+
         moverNodo(listaOriginal, inicial, final);
+
         bool ok = FrameworkA1::sonIgualesDatosForma(listaOriginal, resultadoEsperado);
+        FrameworkA1::destruir(resultadoEsperado);
+
         if (!ok)
         {
+            FrameworkA1::detenerMemTracking();
             char *got = FrameworkA1::serializar(listaOriginal);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
+            REQUIRE(got == expected);
         }
+        else
+        {
+            FrameworkA1::destruir(listaOriginal);
 
-        FrameworkA1::destruir(listaOriginal);
-        FrameworkA1::destruir(resultadoEsperado);
+            checkLeak();
+        }
     };
 
     SECTION("move 1->2") { check("(1,2,3,4,5,6,7,8,9,0)", 1, 2, "(2,1,3,4,5,6,7,8,9,0)"); }
