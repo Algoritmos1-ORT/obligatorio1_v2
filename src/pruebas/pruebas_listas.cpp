@@ -78,6 +78,90 @@ void checkListaModificada(Funcion funcion, const char *inputLista, const char *e
     checkLeak();
 }
 
+template <typename Funcion>
+void checkDosListasNuevas(Funcion funcion, const char *inputLista1, const char *inputLista2, const char *expected)
+{
+    int largo1, largo2, largoSolucion;
+    NodoLista *lista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
+    NodoLista *lista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
+    NodoLista *copiaLista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
+    NodoLista *copiaLista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
+    NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+
+    FrameworkA1::comenzarMemTracking();
+    NodoLista *resultado = funcion(lista1, lista2);
+
+    bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+    bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista1, copiaLista1) && FrameworkA1::sonIgualesDatosForma(lista2, copiaLista2);
+    bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista1) && !FrameworkA1::compartenMemoria(resultado, lista2);
+    if (!ok)
+    {
+        char *got = FrameworkA1::serializar(resultado);
+        FrameworkA1::detenerMemTracking(false);
+        REQUIRE(got == expected);
+    }
+
+    FrameworkA1::destruir(lista1);
+    FrameworkA1::destruir(lista2);
+    FrameworkA1::destruir(copiaLista1);
+    FrameworkA1::destruir(copiaLista2);
+    FrameworkA1::destruir(solucion);
+    FrameworkA1::destruir(resultado);
+    checkLeak();
+
+    if (!parametrosNoModificados)
+        FAIL_CHECK("La función modifica los parámetros de entrada");
+    if (!noComparteMemoria)
+        FAIL_CHECK("El resultado comparte memoria con las listas de entrada");
+}
+
+template <typename Funcion>
+void checkPredicadoLista(Funcion funcion, const char *inputLista, bool expected)
+{
+    int largo;
+    NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
+    NodoLista *copiaLista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
+
+    bool resultado = funcion(lista);
+    bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
+    REQUIRE(resultado == expected);
+    REQUIRE(parametrosNoModificados);
+
+    FrameworkA1::destruir(lista);
+    FrameworkA1::destruir(copiaLista);
+}
+
+template <typename Funcion>
+void checkListaConSecuenciaModificada(Funcion funcion, const char *inputLista, const char *inputSecuencia, const char *expected)
+{
+    int largo, largoSolucion;
+    NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
+    NodoLista *secuencia = (NodoLista *)FrameworkA1::parsearColeccion(inputSecuencia, largo);
+    NodoLista *copiaSecuencia = (NodoLista *)FrameworkA1::parsearColeccion(inputSecuencia, largo);
+    NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+
+    FrameworkA1::comenzarMemTracking();
+    funcion(lista, secuencia);
+
+    bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
+    bool secuenciaNoModificada = FrameworkA1::sonIgualesDatosForma(secuencia, copiaSecuencia);
+    if (!ok)
+    {
+        char *got = FrameworkA1::serializar(lista);
+        FrameworkA1::detenerMemTracking(false);
+        REQUIRE(got == expected);
+    }
+
+    FrameworkA1::destruir(lista);
+    FrameworkA1::destruir(secuencia);
+    FrameworkA1::destruir(copiaSecuencia);
+    FrameworkA1::destruir(solucion);
+    checkLeak();
+
+    if (!secuenciaNoModificada)
+        FAIL_CHECK("La función modifica la secuencia a eliminar");
+}
+
 TEST_CASE("PruebaInvertirParcial cases", "[PruebaInvertirParcial][file:listas]")
 {
     auto check = [](const char *input, const char *expected)
@@ -149,28 +233,7 @@ TEST_CASE("PruebaListaOrdenadaInsertionSort cases", "[PruebaListaOrdenadaInserti
 TEST_CASE("PruebaListaOrdenadaSelectionSort cases", "[PruebaListaOrdenadaSelectionSort][file:listas]")
 {
     auto check = [](const char *inputLista, const char *expected)
-    {
-        int largo;
-        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *resultado = lista;
-        listaOrdenadaSelectionSort(resultado);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-
-        FrameworkA1::destruir(resultado);
-        FrameworkA1::destruir(solucion);
-    };
+    { checkListaModificada(listaOrdenadaSelectionSort, inputLista, expected); };
 
     SECTION("()") { check("()", "()"); }
     SECTION("(4)") { check("(4)", "(4)"); }
@@ -196,42 +259,7 @@ TEST_CASE("PruebaListaOrdenadaSelectionSort cases", "[PruebaListaOrdenadaSelecti
 TEST_CASE("PruebaIntercalarIter cases", "[PruebaIntercalarIter][file:listas]")
 {
     auto check = [](const char *inputLista1, const char *inputLista2, const char *expected)
-    {
-        int largo1;
-        NodoLista *lista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
-        int largo2;
-        NodoLista *lista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
-        NodoLista *copiaLista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
-        NodoLista *copiaLista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
-        NodoLista *resultado = intercalarIter(lista1, lista2);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista1, copiaLista1) && FrameworkA1::sonIgualesDatosForma(lista2, copiaLista2);
-        bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista1) && !FrameworkA1::compartenMemoria(resultado, lista2);
-
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-        if (!parametrosNoModificados)
-            FAIL("La función modifica los parámetros de entrada");
-        if (!noComparteMemoria)
-            FAIL("El resultado comparte memoria con las listas de entrada");
-
-        FrameworkA1::destruir(lista1);
-        FrameworkA1::destruir(lista2);
-        FrameworkA1::destruir(copiaLista1);
-        FrameworkA1::destruir(copiaLista2);
-        FrameworkA1::destruir(solucion);
-        FrameworkA1::destruir(resultado);
-    };
+    { checkDosListasNuevas(intercalarIter, inputLista1, inputLista2, expected); };
 
     SECTION("() and ()") { check("()", "()", "()"); }
     SECTION("(1) and ()") { check("(1)", "()", "(1)"); }
@@ -249,42 +277,7 @@ TEST_CASE("PruebaIntercalarIter cases", "[PruebaIntercalarIter][file:listas]")
 TEST_CASE("PruebaIntercalarRec cases", "[PruebaIntercalarRec][file:listas]")
 {
     auto check = [](const char *inputLista1, const char *inputLista2, const char *expected)
-    {
-        int largo1;
-        NodoLista *lista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
-        int largo2;
-        NodoLista *lista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
-        NodoLista *copiaLista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
-        NodoLista *copiaLista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
-        NodoLista *resultado = intercalarRec(lista1, lista2);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista1, copiaLista1) && FrameworkA1::sonIgualesDatosForma(lista2, copiaLista2);
-        bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista1) && !FrameworkA1::compartenMemoria(resultado, lista2);
-
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-        if (!parametrosNoModificados)
-            FAIL("La función modifica los parámetros de entrada");
-        if (!noComparteMemoria)
-            FAIL("El resultado comparte memoria con las listas de entrada");
-
-        FrameworkA1::destruir(lista1);
-        FrameworkA1::destruir(lista2);
-        FrameworkA1::destruir(copiaLista1);
-        FrameworkA1::destruir(copiaLista2);
-        FrameworkA1::destruir(solucion);
-        FrameworkA1::destruir(resultado);
-    };
+    { checkDosListasNuevas(intercalarRec, inputLista1, inputLista2, expected); };
 
     SECTION("() and ()") { check("()", "()", "()"); }
     SECTION("(1) and ()") { check("(1)", "()", "(1)"); }
@@ -302,37 +295,7 @@ TEST_CASE("PruebaIntercalarRec cases", "[PruebaIntercalarRec][file:listas]")
 TEST_CASE("PruebaInsComFin cases", "[PruebaInsComFin][file:listas]")
 {
     auto check = [](const char *inputLista, int n, const char *expected)
-    {
-        int largo;
-        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *copiaLista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *resultado = insComFin(lista, n);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
-        bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista);
-
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-        if (!parametrosNoModificados)
-            FAIL("La función modifica los parámetros de entrada");
-        if (!noComparteMemoria)
-            FAIL("El resultado comparte memoria con la lista de entrada");
-
-        FrameworkA1::destruir(lista);
-        FrameworkA1::destruir(copiaLista);
-        FrameworkA1::destruir(solucion);
-        FrameworkA1::destruir(resultado);
-    };
+    { checkListaNueva([n](NodoLista *lista) { return insComFin(lista, n); }, inputLista, expected); };
 
     SECTION("(1,2,1) x=0") { check("(1,2,1)", 0, "(0,1,2,1,0)"); }
     SECTION("(1,2,3,4) x=5") { check("(1,2,3,4)", 5, "(5,4,3,2,1,5)"); }
@@ -349,42 +312,7 @@ TEST_CASE("PruebaInsComFin cases", "[PruebaInsComFin][file:listas]")
 TEST_CASE("PruebaEXOR cases", "[PruebaEXOR][file:listas]")
 {
     auto check = [](const char *inputLista1, const char *inputLista2, const char *expected)
-    {
-        int largo1;
-        NodoLista *lista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
-        int largo2;
-        NodoLista *lista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
-        NodoLista *copiaLista1 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista1, largo1);
-        NodoLista *copiaLista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
-        NodoLista *resultado = exor(lista1, lista2);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista1, copiaLista1) && FrameworkA1::sonIgualesDatosForma(lista2, copiaLista2);
-        bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista1) && !FrameworkA1::compartenMemoria(resultado, lista2);
-
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-        if (!parametrosNoModificados)
-            FAIL("La función modifica los parámetros de entrada");
-        if (!noComparteMemoria)
-            FAIL("El resultado comparte memoria con las listas de entrada");
-
-        FrameworkA1::destruir(lista1);
-        FrameworkA1::destruir(lista2);
-        FrameworkA1::destruir(copiaLista1);
-        FrameworkA1::destruir(copiaLista2);
-        FrameworkA1::destruir(solucion);
-        FrameworkA1::destruir(resultado);
-    };
+    { checkDosListasNuevas(exor, inputLista1, inputLista2, expected); };
 
     SECTION("(100,200,300,400) xor same") { check("(100,200,300,400)", "(100,200,300,400)", "()"); }
     SECTION("(1,2,3,4) xor (2,3,5,7)") { check("(1,2,3,4)", "(2,3,5,7)", "(1,4,5,7)"); }
@@ -404,27 +332,7 @@ TEST_CASE("PruebaEXOR cases", "[PruebaEXOR][file:listas]")
 TEST_CASE("PruebaEliminarDuplicadosListaOrdenadaDos cases", "[PruebaEliminarDuplicadosListaOrdenadaDos][file:listas]")
 {
     auto check = [](const char *inputLista, const char *expected)
-    {
-        int largo;
-        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        eliminarDuplicadosListaOrdenadaDos(lista);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(lista);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-
-        FrameworkA1::destruir(lista);
-        FrameworkA1::destruir(solucion);
-    };
+    { checkListaModificada(eliminarDuplicadosListaOrdenadaDos, inputLista, expected); };
 
     SECTION("(100,100,200,200,300,300,400,400)") { check("(100,100,200,200,300,300,400,400)", "()"); }
     SECTION("()") { check("()", "()"); }
@@ -441,27 +349,7 @@ TEST_CASE("PruebaEliminarDuplicadosListaOrdenadaDos cases", "[PruebaEliminarDupl
 TEST_CASE("PruebaPalindromo cases", "[PruebaPalindromo][file:listas]")
 {
     auto check = [](const char *inputLista, bool expected)
-    {
-        int largo;
-        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-        NodoLista *copiaLista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
-
-        bool resultado = palindromo(lista);
-        bool ok = resultado == expected;
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
-
-        if (!ok)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
-        if (!parametrosNoModificados)
-            FAIL("La función modifica los parámetros de entrada");
-
-        FrameworkA1::destruir(lista);
-        FrameworkA1::destruir(copiaLista);
-    };
+    { checkPredicadoLista(palindromo, inputLista, expected); };
 
     SECTION("(1,0,1)") { check("(1,0,1)", true); }
     SECTION("()") { check("()", true); }
@@ -479,34 +367,7 @@ TEST_CASE("PruebaPalindromo cases", "[PruebaPalindromo][file:listas]")
 TEST_CASE("PruebaEliminarSecuencia cases", "[PruebaEliminarSecuencia][file:listas]")
 {
     auto check = [](const char *inputListaOriginal, const char *inputSecuenciaAEliminar, const char *expected)
-    {
-        int largo;
-        NodoLista *listaOriginal = (NodoLista *)FrameworkA1::parsearColeccion(inputListaOriginal, largo);
-        NodoLista *secuenciaAEliminar = (NodoLista *)FrameworkA1::parsearColeccion(inputSecuenciaAEliminar, largo);
-        NodoLista *copiaSecuenciaAEliminar = (NodoLista *)FrameworkA1::parsearColeccion(inputSecuenciaAEliminar, largo);
-        NodoLista *resultadoEsperado = (NodoLista *)FrameworkA1::parsearColeccion(expected, largo);
-
-        eliminarSecuencia(listaOriginal, secuenciaAEliminar);
-        bool ok = FrameworkA1::sonIgualesDatosForma(listaOriginal, resultadoEsperado);
-        bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(secuenciaAEliminar, copiaSecuenciaAEliminar);
-
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(listaOriginal);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            std::string msg = oss.str();
-            delete[] got;
-            FAIL(msg);
-        }
-        if (!parametrosNoModificados)
-            FAIL("Function modified the sequence to remove");
-
-        FrameworkA1::destruir(listaOriginal);
-        FrameworkA1::destruir(secuenciaAEliminar);
-        FrameworkA1::destruir(copiaSecuenciaAEliminar);
-        FrameworkA1::destruir(resultadoEsperado);
-    };
+    { checkListaConSecuenciaModificada(eliminarSecuencia, inputListaOriginal, inputSecuenciaAEliminar, expected); };
 
     SECTION("() remove ()") { check("()", "()", "()"); }
     SECTION("(1,2,3,4,5,6,7,8,9,0) remove (2,3,4)") { check("(1,2,3,4,5,6,7,8,9,0)", "(2,3,4)", "(1,5,6,7,8,9,0)"); }
@@ -523,32 +384,7 @@ TEST_CASE("PruebaEliminarSecuencia cases", "[PruebaEliminarSecuencia][file:lista
 TEST_CASE("PruebaMoverNodo cases", "[PruebaMoverNodo][file:listas]")
 {
     auto check = [](const char *inputListaOriginal, unsigned int inicial, unsigned int final, const char *expected)
-    {
-        int largo;
-
-        NodoLista *listaOriginal = (NodoLista *)FrameworkA1::parsearColeccion(inputListaOriginal, largo);
-        NodoLista *resultadoEsperado = (NodoLista *)FrameworkA1::parsearColeccion(expected, largo);
-
-        FrameworkA1::comenzarMemTracking();
-
-        moverNodo(listaOriginal, inicial, final);
-
-        bool ok = FrameworkA1::sonIgualesDatosForma(listaOriginal, resultadoEsperado);
-        FrameworkA1::destruir(resultadoEsperado);
-
-        if (!ok)
-        {
-            FrameworkA1::detenerMemTracking();
-            char *got = FrameworkA1::serializar(listaOriginal);
-            REQUIRE(got == expected);
-        }
-        else
-        {
-            FrameworkA1::destruir(listaOriginal);
-
-            checkLeak();
-        }
-    };
+    { checkListaModificada([inicial, final](NodoLista *&lista) { moverNodo(lista, inicial, final); }, inputListaOriginal, expected); };
 
     SECTION("move 1->2") { check("(1,2,3,4,5,6,7,8,9,0)", 1, 2, "(2,1,3,4,5,6,7,8,9,0)"); }
     SECTION("move 1->5") { check("(1,2,3,4,5,6,7,8,9,0)", 1, 5, "(2,3,4,5,1,6,7,8,9,0)"); }
