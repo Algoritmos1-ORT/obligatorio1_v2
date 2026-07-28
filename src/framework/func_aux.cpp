@@ -1,14 +1,20 @@
 #include "func_aux.hpp"
+#include "memplumber.h"
 
-//#ifndef FUNCAUX_CPP
-//#define FUNCAUX_CPP
+namespace
+{
+}
 
-struct NodoListaAux {
+// #ifndef FUNCAUX_CPP
+// #define FUNCAUX_CPP
+
+struct NodoListaAux
+{
 	int dato;
 	bool esVacio;
 	NodoListaAux *sig;
 	NodoListaAux(int x, bool vacio) : dato(x), esVacio(vacio), sig(NULL) {}
-	NodoListaAux() : dato(-1), esVacio(true), sig(NULL) {} //constructor por defecto
+	NodoListaAux() : dato(-1), esVacio(true), sig(NULL) {} // constructor por defecto
 };
 
 /*
@@ -26,30 +32,30 @@ namespace FrameworkA1
 {
 	void append(char *&str, const char *strA);
 	char *intToStr(int i);
-	int cantDatos(NodoLista* l);
-	int cantDatos(NodoListaAux* l);
-	NodoAB *convertListaAuxToAB(NodoListaAux* & l, int &largo);
-	NodoAG *convertListaAuxToAG(NodoListaAux* & l, int &largo);
+	int cantDatos(NodoLista *l);
+	int cantDatos(NodoListaAux *l);
+	NodoAB *convertListaAuxToAB(NodoListaAux *&l, int &largo);
+	NodoAG *convertListaAuxToAG(NodoListaAux *&l, int &largo);
 	void destruir(NodoListaAux *&l);
 	void agregarFin(NodoLista *&l, int val);
 	void abALista(NodoAB *a, NodoLista *&l);
 	unsigned int pow2(unsigned pwr);
-	unsigned int altura(NodoAB* a);
+	unsigned int altura(NodoAB *a);
 	void imprimirListaAux(NodoLista *l);
 	char *abAStrAux(NodoAB *a);
-	void borrarPpio(NodoListaAux* & l);
+	void borrarPpio(NodoListaAux *&l);
 	void listaAVector(NodoLista *l, int *vec, int &pos);
 	int *listaAVectorOrdenado(NodoLista *l, int &largoVec);
 	char *agAStrAux(NodoAG *a);
 	void abAVector(NodoAB *a, int *vec, int &pos);
 	void agAVector(NodoAG *a, int *vec, int &pos);
 	int *agAVectorOrdenado(NodoAG *a, int &largoVec);
-	NodoListaAux* splitStringToListaAux(char *stringDatos);
-	void convertListaAuxToAG(NodoListaAux* &l, NodoAG *&a, int &largo);
+	NodoListaAux *splitStringToListaAux(char *stringDatos);
+	void convertListaAuxToAG(NodoListaAux *&l, NodoAG *&a, int &largo);
 	void recorroABYCargoVector(NodoAB *a, NodoAB **vec, unsigned int posVecActual, unsigned int largoVec);
 	char *serializar(int i);
 	void serializarAux(NodoLista *l, char *&str);
-	NodoAG* parsearAG(char *stringDatos, int &largo);
+	NodoAG *parsearAG(char *stringDatos, int &largo);
 	/*
 	PRE:
 	POS:ordena el vector recibido
@@ -57,12 +63,12 @@ namespace FrameworkA1
 	void ordenarVector(int *vec, int largoVec);
 	/*
 	PRE:
-	POS:devuelve un vector ordenado con los datos del arbol a 
+	POS:devuelve un vector ordenado con los datos del arbol a
 	*/
 	int *abAVectorOrdenado(NodoAB *a, int &largoVec);
 
 	/*
-	PRE: 
+	PRE:
 	POS: concatena dest y src, poniendo src al final de dest. Aumenta el tamano de dest.
 	*/
 	void concat(char *&dest, const char *src);
@@ -70,12 +76,12 @@ namespace FrameworkA1
 	PRE: debe recibir un vector de strings del largo indicado
 	POS: imprime el vector vec
 	*/
-	void imprimirVectorStrings(char** vec, int largo);
+	void imprimirVectorStrings(char **vec, int largo);
 	/*
 	PRE: debe recibir una matriz que debe tener las columnas y filas indicadas
 	POS: imprime matriz mat
 	*/
-	void imprimirMatrizInts(int** mat, int columnas, int filas);
+	void imprimirMatrizInts(int **mat, int columnas, int filas);
 	/*
 	PRE:
 	POS:Imprime lista l
@@ -103,7 +109,7 @@ namespace FrameworkA1
 	PRE: los caracteres de stringDatos son enteros o #. # indica fin de la rama. Formato "2,#,8,1,2"
 	POS: devuelve una arbol con los datos de stringDatos y la cantidad de elementos
 	*/
-	NodoAB* parsearAB(char *stringDatos, int &largo);
+	NodoAB *parsearAB(char *stringDatos, int &largo);
 	/*
 	PRE:
 	POS: devuelve una nueva lista, igual a l
@@ -113,62 +119,65 @@ namespace FrameworkA1
 	PRE:
 	POS: devuelve la altura de a
 	*/
-	unsigned int altura(NodoAB* a);
+	unsigned int altura(NodoAB *a);
 	/*
 	PRE:
 	POS: devuelve cantidad de nodos de a
 	*/
-	int cantDatos(NodoAB* a);
+	int cantDatos(NodoAB *a);
 	/*
 	PRE:
 	POS: retorna el maximo de un AB no vacio
-	*/ 
+	*/
 	int maxAB(NodoAB *a);
 	/*
 	PRE:
 	POS: retorna el minimo de un AB no vacio
-	*/ 
+	*/
 	int minAB(NodoAB *a);
-	int cantDatos(NodoAG* a);
+	int cantDatos(NodoAG *a);
 
 }
 
-
-void FrameworkA1::imprimirVectorStrings(char** vec, int largo){
-	if(vec!=NULL){
-		for(int i=0; i < largo; i++){
+void FrameworkA1::imprimirVectorStrings(char **vec, int largo)
+{
+	if (vec != NULL)
+	{
+		for (int i = 0; i < largo; i++)
+		{
 			int j = 0;
-			while(vec[i][j]!='\0') {
-				cout<<vec[i][j];
+			while (vec[i][j] != '\0')
+			{
+				cout << vec[i][j];
 				j++;
-			} 
-			cout<<" ";
+			}
+			cout << " ";
 		}
 		cout << endl;
-	}else
-		cout<<"Array Vacio!"<<endl;
+	}
+	else
+		cout << "Array Vacio!" << endl;
 }
 
-void FrameworkA1::imprimirMatrizInts(int** mat, int columnas, int filas){
-	if(mat!=NULL){
-		for(int f=0; f < filas; f++){
-			for(int c=0; c < columnas; c++){
-				cout<<mat[c][f] <<"\t";
-			} 
-			cout<<endl;
+void FrameworkA1::imprimirMatrizInts(int **mat, int columnas, int filas)
+{
+	if (mat != NULL)
+	{
+		for (int f = 0; f < filas; f++)
+		{
+			for (int c = 0; c < columnas; c++)
+			{
+				cout << mat[c][f] << "\t";
+			}
+			cout << endl;
 		}
-	}else
-		cout<<"Matriz Vacia!"<<endl;
+	}
+	else
+		cout << "Matriz Vacia!" << endl;
 }
 
-
-
-
-
-
-
-
-void FrameworkA1::imprimirListaAux(NodoLista *l) {
+void FrameworkA1::imprimirListaAux(NodoLista *l)
+{
 	if (l == NULL)
 		return;
 	cout << l->dato;
@@ -177,13 +186,15 @@ void FrameworkA1::imprimirListaAux(NodoLista *l) {
 	imprimirListaAux(l->sig);
 }
 
-void FrameworkA1::imprimirLista(NodoLista *l) {
+void FrameworkA1::imprimirLista(NodoLista *l)
+{
 	cout << "{";
 	imprimirListaAux(l);
 	cout << "}";
 }
 
-void FrameworkA1::imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec) {
+void FrameworkA1::imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec)
+{
 	cout << "\tParametros de entrada: FrameworkA1::ver ARCHIVO DE PRUEBAS" << endl;
 	cout << "\tSe esperaba: ";
 	imprimirLista(esp);
@@ -193,7 +204,8 @@ void FrameworkA1::imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec) {
 	cout << endl;
 }
 
-void FrameworkA1::imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec, const char *inputParametersFormated) {
+void FrameworkA1::imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec, const char *inputParametersFormated)
+{
 	cout << "\tParametros de entrada: " << inputParametersFormated << endl;
 	cout << "\tSe esperaba: ";
 	imprimirLista(esp);
@@ -203,9 +215,10 @@ void FrameworkA1::imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec, con
 	cout << endl;
 }
 
-void FrameworkA1::imprimirEsperadoVsRecibido(NodoAB *esp, NodoAB *rec, const char *inputParametersFormated) {
-	char* esperado = FrameworkA1::serializar(esp);
-	char* recibido = FrameworkA1::serializar(rec);
+void FrameworkA1::imprimirEsperadoVsRecibido(NodoAB *esp, NodoAB *rec, const char *inputParametersFormated)
+{
+	char *esperado = FrameworkA1::serializar(esp);
+	char *recibido = FrameworkA1::serializar(rec);
 	cout << "\tParametros de entrada: " << inputParametersFormated << endl;
 	cout << "\tSe esperaba: " << esperado << endl;
 	cout << "\tSe recibio:  " << recibido << endl;
@@ -213,9 +226,10 @@ void FrameworkA1::imprimirEsperadoVsRecibido(NodoAB *esp, NodoAB *rec, const cha
 	delete[] recibido;
 }
 
-void FrameworkA1::imprimirEsperadoVsRecibido(NodoAG *esp, NodoAG *rec, const char *inputParametersFormated) {
-	char* esperado = FrameworkA1::serializar(esp);
-	char* recibido = FrameworkA1::serializar(rec);
+void FrameworkA1::imprimirEsperadoVsRecibido(NodoAG *esp, NodoAG *rec, const char *inputParametersFormated)
+{
+	char *esperado = FrameworkA1::serializar(esp);
+	char *recibido = FrameworkA1::serializar(rec);
 	cout << "\tParametros de entrada: " << inputParametersFormated << endl;
 	cout << "\tSe esperaba: " << esperado << endl;
 	cout << "\tSe recibio:  " << recibido << endl;
@@ -223,9 +237,10 @@ void FrameworkA1::imprimirEsperadoVsRecibido(NodoAG *esp, NodoAG *rec, const cha
 	delete[] recibido;
 }
 
-void FrameworkA1::imprimirEsperadoVsRecibido(bool esp, bool rec, const char *inputParametersFormated) {
-	char* esperado = FrameworkA1::serializar(esp);
-	char* recibido = FrameworkA1::serializar(rec);
+void FrameworkA1::imprimirEsperadoVsRecibido(bool esp, bool rec, const char *inputParametersFormated)
+{
+	char *esperado = FrameworkA1::serializar(esp);
+	char *recibido = FrameworkA1::serializar(rec);
 	cout << "\tParametros de entrada: " << inputParametersFormated << endl;
 	cout << "\tSe esperaba: " << esperado << endl;
 	cout << "\tSe recibio:  " << recibido << endl;
@@ -233,9 +248,10 @@ void FrameworkA1::imprimirEsperadoVsRecibido(bool esp, bool rec, const char *inp
 	delete[] recibido;
 }
 
-void FrameworkA1::imprimirEsperadoVsRecibido(int esp, int rec, const char *inputParametersFormated) {
-	char* esperado = FrameworkA1::serializar(esp);
-	char* recibido = FrameworkA1::serializar(rec);
+void FrameworkA1::imprimirEsperadoVsRecibido(int esp, int rec, const char *inputParametersFormated)
+{
+	char *esperado = FrameworkA1::serializar(esp);
+	char *recibido = FrameworkA1::serializar(rec);
 	cout << "\tParametros de entrada: " << inputParametersFormated << endl;
 	cout << "\tSe esperaba: " << esperado << endl;
 	cout << "\tSe recibio:  " << recibido << endl;
@@ -243,7 +259,8 @@ void FrameworkA1::imprimirEsperadoVsRecibido(int esp, int rec, const char *input
 	delete[] recibido;
 }
 
-void FrameworkA1::imprimirEsperadoVsRecibido(const char *esp, const char *rec, const char *inputParametersFormated) {
+void FrameworkA1::imprimirEsperadoVsRecibido(const char *esp, const char *rec, const char *inputParametersFormated)
+{
 	cout << "\tParametros de entrada: " << inputParametersFormated << endl;
 	cout << "\tSe esperaba: " << esp << endl;
 	if (rec != NULL)
@@ -252,15 +269,16 @@ void FrameworkA1::imprimirEsperadoVsRecibido(const char *esp, const char *rec, c
 		cout << "\tSe recibio:  " << "NULL" << endl;
 }
 
-void FrameworkA1::ver(bool res, int &correctos, int &error) {
+void FrameworkA1::ver(bool res, int &correctos, int &error)
+{
 	if (res == true)
 		correctos++;
 	else
 		error++;
 }
 
-void FrameworkA1::imprimirResultadoPrueba(const char *nomFuncion, int &nroPrueba, int &correctos, int &error, 
-	int &correctosTotal, int &errorTotal, int &ejCorrectosTotal, int &ejErrorTotal)
+void FrameworkA1::imprimirResultadoPrueba(const char *nomFuncion, int &nroPrueba, int &correctos, int &error,
+										  int &correctosTotal, int &errorTotal, int &ejCorrectosTotal, int &ejErrorTotal)
 {
 	cout << "----------------------------------------------" << endl;
 	if (error == 0)
@@ -276,11 +294,9 @@ void FrameworkA1::imprimirResultadoPrueba(const char *nomFuncion, int &nroPrueba
 	correctos = error = 0;
 }
 
-
-
 //
 //// IMPRIME LOS ELEMENTOS DEL ARBOL POR NIVELES CON EL #. TODO: quitar los # del final (pero que quede siempre par)
-//void imprimirABAux(NodoAB *a) {
+// void imprimirABAux(NodoAB *a) {
 //	if(a==NULL){
 //		return;
 //	}
@@ -292,7 +308,7 @@ void FrameworkA1::imprimirResultadoPrueba(const char *nomFuncion, int &nroPrueba
 //			cout << "#";
 //		else
 //			cout << nodo->dato;
-//		
+//
 //		desencolar(c);
 //		if (nodo != NULL) {
 //		//if (nodo->izq != NULL) {
@@ -302,133 +318,144 @@ void FrameworkA1::imprimirResultadoPrueba(const char *nomFuncion, int &nroPrueba
 //			encolar(c, nodo->der);
 //		//}
 //		}
-//		if (!esVacia(c)) 
+//		if (!esVacia(c))
 //			cout << ",";
-//	}	
+//	}
 //	FrameworkA1::destruir(c);
 //	return;
-//}
+// }
 
-
-void FrameworkA1::recorroABYCargoVector(NodoAB *a, NodoAB **vec, unsigned int posVecActual, unsigned int largoVec) {
-	if (a==NULL)
+void FrameworkA1::recorroABYCargoVector(NodoAB *a, NodoAB **vec, unsigned int posVecActual, unsigned int largoVec)
+{
+	if (a == NULL)
 		return;
-	recorroABYCargoVector(a->izq, vec, 2*posVecActual+1, largoVec);
+	recorroABYCargoVector(a->izq, vec, 2 * posVecActual + 1, largoVec);
 	assert(posVecActual < largoVec);
 	vec[posVecActual] = a;
-	recorroABYCargoVector(a->der, vec, 2*posVecActual+2, largoVec);
+	recorroABYCargoVector(a->der, vec, 2 * posVecActual + 2, largoVec);
 }
 
-void FrameworkA1::imprimirABGrande(NodoAB *a) {
-//	imprimirAB(a);
-	if (a == NULL) {
+void FrameworkA1::imprimirABGrande(NodoAB *a)
+{
+	//	imprimirAB(a);
+	if (a == NULL)
+	{
 		cout << "Arbol vacio" << endl;
 		return;
 	}
 
 	unsigned int alt = altura(a);
-	unsigned int largoVec = pow2(alt) - 1; 
-	NodoAB **vec = new NodoAB*[largoVec];
-	for (unsigned int i=0; i<largoVec; i++)
+	unsigned int largoVec = pow2(alt) - 1;
+	NodoAB **vec = new NodoAB *[largoVec];
+	for (unsigned int i = 0; i < largoVec; i++)
 		vec[i] = NULL;
 	recorroABYCargoVector(a, vec, 0, largoVec);
 
-	//for (unsigned int i=0; i<largoVec; i++) {
+	// for (unsigned int i=0; i<largoVec; i++) {
 	//	if (vec[i] == NULL)
 	//		cout << "# ";
 	//	else
 	//		cout << vec[i]->dato << " ";
-	//}
-	//cout << endl;
+	// }
+	// cout << endl;
 
-	//unsigned int cantNodosUltimoNivel = pow2(alt-1);
+	// unsigned int cantNodosUltimoNivel = pow2(alt-1);
 
-	for (unsigned int i=1; i<=alt; i++) {
-		unsigned int posInicialNivel = pow2(i-1) - 1; 
-		unsigned int cantNodosNivel = pow2(i-1);
+	for (unsigned int i = 1; i <= alt; i++)
+	{
+		unsigned int posInicialNivel = pow2(i - 1) - 1;
+		unsigned int cantNodosNivel = pow2(i - 1);
 		unsigned int espacios;
-		if (alt == i) {
+		if (alt == i)
+		{
 			espacios = 0;
 			cout << " ";
 		}
 		else
 			espacios = pow2(alt - i - 1);
-		//for (unsigned int i=0; i<espacios; i++) {
+		// for (unsigned int i=0; i<espacios; i++) {
 		//	cout << setw(3) << "";
-		//}
-		for (unsigned int j=posInicialNivel; j<posInicialNivel+cantNodosNivel; j++) {
-			for (unsigned int k=0; k<espacios; k++)
+		// }
+		for (unsigned int j = posInicialNivel; j < posInicialNivel + cantNodosNivel; j++)
+		{
+			for (unsigned int k = 0; k < espacios; k++)
 				cout << setw(3) << "";
 			assert(j < largoVec);
 			if (vec[j] == NULL)
 				cout << setw(3) << "#";
 			else
 				cout << setw(3) << vec[j]->dato;
-			//for (unsigned int i=0; i<espacios; i++)
+			// for (unsigned int i=0; i<espacios; i++)
 			//	cout << setw(3) << "";
 		}
 		cout << endl;
 	}
-
 }
 
-
-
-// PRE: 
+// PRE:
 // POS: RETORNA STRING CON LOS ELEMENTOS DEL ARBOL POR NIVELES CON EL #. NOTA: tambien quita los # del final pero lo deja siempre par)
-char *FrameworkA1::abAStrAux(NodoAB *a) {
+char *FrameworkA1::abAStrAux(NodoAB *a)
+{
 	int numConsecutivos = 0, cantElementos = 0;
 	char *ret = copioString("");
-	if(a==NULL){
+	if (a == NULL)
+	{
 		return ret;
 	}
 
-	ColaArray c = crearColaArray(pow2(altura(a)+1) - 1); // calculo lugar para todos los nodos del arbol como si fuera completo mas un nivel extra por los #
-	ColaArray salida = crearColaArray(pow2(altura(a)+1) - 1); // calculo lugar para todos los nodos del arbol como si fuera completo mas un nivel extra por los #
+	ColaArray c = crearColaArray(pow2(altura(a) + 1) - 1);		// calculo lugar para todos los nodos del arbol como si fuera completo mas un nivel extra por los #
+	ColaArray salida = crearColaArray(pow2(altura(a) + 1) - 1); // calculo lugar para todos los nodos del arbol como si fuera completo mas un nivel extra por los #
 	encolar(c, a);
-	while(!esVacia(c)){
-		NodoAB* nodo = (NodoAB*)frente(c);
-		if (nodo == NULL) {
-			char* aux = copioString("#");
+	while (!esVacia(c))
+	{
+		NodoAB *nodo = (NodoAB *)frente(c);
+		if (nodo == NULL)
+		{
+			char *aux = copioString("#");
 			encolar(salida, aux);
 			numConsecutivos++;
 			cantElementos++;
 		}
-		else {
-			char* aux = intToStr(nodo->dato);
+		else
+		{
+			char *aux = intToStr(nodo->dato);
 			encolar(salida, aux);
 			numConsecutivos = 0;
 			cantElementos++;
 		}
-		
+
 		desencolar(c);
-		if (nodo != NULL) {
-		//if (nodo->izq != NULL) {
+		if (nodo != NULL)
+		{
+			// if (nodo->izq != NULL) {
 			encolar(c, nodo->izq);
-		//}
-		//if (nodo->der != NULL) {
+			//}
+			// if (nodo->der != NULL) {
 			encolar(c, nodo->der);
-		//}
+			//}
 		}
-	}	
+	}
 	destruir(c);
 
-	if (numConsecutivos % 2 != 0) 
+	if (numConsecutivos % 2 != 0)
 		numConsecutivos--;
 	int cantidadACopiar = cantElementos - numConsecutivos;
 	// concateno en el string a retornar
 	concat(ret, "{");
-	for (int i=0; i<cantidadACopiar; i++) {
-		char* aux = (char*)frente(salida);
+	for (int i = 0; i < cantidadACopiar; i++)
+	{
+		char *aux = (char *)frente(salida);
 		desencolar(salida);
 		concat(ret, aux);
-		delete [] aux;
-		if (i < cantidadACopiar-1) {
+		delete[] aux;
+		if (i < cantidadACopiar - 1)
+		{
 			concat(ret, ",");
 		}
 	}
-	while (!esVacia(salida)) { // solo quedan #
-		char* aux = (char*)frente(salida);
+	while (!esVacia(salida))
+	{ // solo quedan #
+		char *aux = (char *)frente(salida);
 		assert(aux != NULL && aux[0] == '#');
 		desencolar(salida);
 		delete[] aux;
@@ -438,13 +465,13 @@ char *FrameworkA1::abAStrAux(NodoAB *a) {
 	return ret;
 }
 
-
-
-// PRE: 
+// PRE:
 // POS: RETORNA STRING CON LOS ELEMENTOS DEL AG
-char *FrameworkA1::agAStrAux(NodoAG *a) {
+char *FrameworkA1::agAStrAux(NodoAG *a)
+{
 	char *ret = copioString("");
-	if(a==NULL){
+	if (a == NULL)
+	{
 		append(ret, ",#");
 		return ret;
 	}
@@ -453,20 +480,20 @@ char *FrameworkA1::agAStrAux(NodoAG *a) {
 	append(ret, aux);
 	char *ph = agAStrAux(a->ph);
 	append(ret, ph);
-	delete [] ph;
+	delete[] ph;
 	char *sh = agAStrAux(a->sh);
 	append(ret, sh);
-	delete [] sh;
+	delete[] sh;
 	return ret;
 }
 
-
-
-unsigned int FrameworkA1::pow2( unsigned pwr ) {
-   return pwr==0? 1 : 2*pow2(pwr-1);
+unsigned int FrameworkA1::pow2(unsigned pwr)
+{
+	return pwr == 0 ? 1 : 2 * pow2(pwr - 1);
 }
 
-char *FrameworkA1::copioString(const char *str) {
+char *FrameworkA1::copioString(const char *str)
+{
 	std::size_t len = strlen(str) + 1;
 	char *ret = new char[len];
 	strcpy_s(ret, len, str);
@@ -479,29 +506,32 @@ void FrameworkA1::append(char *&str, const char *strA)
 	char *ret = new char[l];
 	strcpy_s(ret, l, str);
 	strcat_s(ret, l, strA);
-	delete [] str;
+	delete[] str;
 	str = ret;
 }
 
-char *FrameworkA1::intToStr(int i) {
+char *FrameworkA1::intToStr(int i)
+{
 	unsigned int len = 11 + 1; // int min: -2147483648 max: 2147483647
 	char *ret = new char[len];
 	_itoa_s(i, ret, len, 10);
 	char *ret2 = copioString(ret); // reservo la memoria justa
-	delete [] ret;
+	delete[] ret;
 	return ret2;
 }
 
-void FrameworkA1::concat(char *&dest, const char *src) {
+void FrameworkA1::concat(char *&dest, const char *src)
+{
 	std::size_t retL = strlen(dest) + strlen(src) + 1;
 	char *ret = new char[retL];
 	strcpy_s(ret, retL, dest);
 	strcat_s(ret, retL, src);
-	delete [] dest;
+	delete[] dest;
 	dest = ret;
 }
 
-NodoLista * FrameworkA1::copiarLista(NodoLista *l) {
+NodoLista *FrameworkA1::copiarLista(NodoLista *l)
+{
 	if (l == NULL)
 		return NULL;
 	NodoLista *n = new NodoLista(l->dato);
@@ -509,24 +539,29 @@ NodoLista * FrameworkA1::copiarLista(NodoLista *l) {
 	return n;
 }
 
-void FrameworkA1::borrarPpio(NodoListaAux* & l) {
-	NodoListaAux* temp = l;
+void FrameworkA1::borrarPpio(NodoListaAux *&l)
+{
+	NodoListaAux *temp = l;
 	l = l->sig;
 	delete temp;
 }
 
 void FrameworkA1::agregarFin(NodoLista *&l, int val)
 {
-    if (l == NULL)
-        l = new NodoLista(val);
-    else
-        agregarFin(l->sig, val);
+	if (l == NULL)
+		l = new NodoLista(val);
+	else
+		agregarFin(l->sig, val);
 }
 
-void FrameworkA1::ordenarVector(int *vec, int largoVec) {
-	for (int i = 0; i < largoVec; i++) {
-		for (int j = 0; j < largoVec - 1; j++) {
-			if (vec[j] > vec[j + 1]) {
+void FrameworkA1::ordenarVector(int *vec, int largoVec)
+{
+	for (int i = 0; i < largoVec; i++)
+	{
+		for (int j = 0; j < largoVec - 1; j++)
+		{
+			if (vec[j] > vec[j + 1])
+			{
 				int aux = vec[j];
 				vec[j] = vec[j + 1];
 				vec[j + 1] = aux;
@@ -537,13 +572,15 @@ void FrameworkA1::ordenarVector(int *vec, int largoVec) {
 
 void FrameworkA1::listaAVector(NodoLista *l, int *vec, int &pos)
 {
-    if (l != NULL) {
-        vec[pos++] = l->dato;
+	if (l != NULL)
+	{
+		vec[pos++] = l->dato;
 		listaAVector(l->sig, vec, pos);
-    }
+	}
 }
 
-int *FrameworkA1::listaAVectorOrdenado(NodoLista *l, int &largoVec) {
+int *FrameworkA1::listaAVectorOrdenado(NodoLista *l, int &largoVec)
+{
 	largoVec = cantDatos(l);
 	int *vec = new int[largoVec];
 	int pos = 0;
@@ -554,14 +591,16 @@ int *FrameworkA1::listaAVectorOrdenado(NodoLista *l, int &largoVec) {
 
 void FrameworkA1::abAVector(NodoAB *a, int *vec, int &pos)
 {
-    if (a != NULL) {
-        abAVector(a->izq, vec, pos);
-        vec[pos++] = a->dato;
-        abAVector(a->der, vec, pos);
-    }
+	if (a != NULL)
+	{
+		abAVector(a->izq, vec, pos);
+		vec[pos++] = a->dato;
+		abAVector(a->der, vec, pos);
+	}
 }
 
-int *FrameworkA1::abAVectorOrdenado(NodoAB *a, int &largoVec) {
+int *FrameworkA1::abAVectorOrdenado(NodoAB *a, int &largoVec)
+{
 	largoVec = cantDatos(a);
 	int *vec = new int[largoVec];
 	int pos = 0;
@@ -572,14 +611,16 @@ int *FrameworkA1::abAVectorOrdenado(NodoAB *a, int &largoVec) {
 
 void FrameworkA1::agAVector(NodoAG *a, int *vec, int &pos)
 {
-    if (a != NULL) {
-        agAVector(a->ph, vec, pos);
-        vec[pos++] = a->dato;
-        agAVector(a->sh, vec, pos);
-    }
+	if (a != NULL)
+	{
+		agAVector(a->ph, vec, pos);
+		vec[pos++] = a->dato;
+		agAVector(a->sh, vec, pos);
+	}
 }
 
-int *FrameworkA1::agAVectorOrdenado(NodoAG *a, int &largoVec) {
+int *FrameworkA1::agAVectorOrdenado(NodoAG *a, int &largoVec)
+{
 	largoVec = cantDatos(a);
 	int *vec = new int[largoVec];
 	int pos = 0;
@@ -588,190 +629,211 @@ int *FrameworkA1::agAVectorOrdenado(NodoAG *a, int &largoVec) {
 	return vec;
 }
 
-
-
-int FrameworkA1::cantDatos(NodoListaAux* l) {
+int FrameworkA1::cantDatos(NodoListaAux *l)
+{
 	if (l == NULL)
 		return 0;
 	return cantDatos(l->sig) + 1;
 }
 
-int FrameworkA1::cantDatos(NodoLista* l) {
+int FrameworkA1::cantDatos(NodoLista *l)
+{
 	if (l == NULL)
-        return 0;
-    return cantDatos(l->sig) + 1;
+		return 0;
+	return cantDatos(l->sig) + 1;
 }
 
-int FrameworkA1::cantDatos(NodoAB* a) {
+int FrameworkA1::cantDatos(NodoAB *a)
+{
 	if (a == NULL)
-        return 0;
-    return cantDatos(a->izq) + cantDatos(a->der) + 1;
+		return 0;
+	return cantDatos(a->izq) + cantDatos(a->der) + 1;
 }
 
-int FrameworkA1::cantDatos(NodoAG* a) {
+int FrameworkA1::cantDatos(NodoAG *a)
+{
 	if (a == NULL)
-        return 0;
-    return cantDatos(a->ph) + cantDatos(a->sh) + 1;
+		return 0;
+	return cantDatos(a->ph) + cantDatos(a->sh) + 1;
 }
 
-unsigned int FrameworkA1::altura(NodoAB* a) {
-    if (a == NULL)
-        return 0;
-    return max(altura(a->izq), altura(a->der)) + 1;
+unsigned int FrameworkA1::altura(NodoAB *a)
+{
+	if (a == NULL)
+		return 0;
+	return max(altura(a->izq), altura(a->der)) + 1;
 }
 
-
-
-
-
-
-
-
-
-
-
-void FrameworkA1::destruir(char** vec, int largo){
-	if(vec!=NULL){
-		for(int i=0; i < largo; i++){
+void FrameworkA1::destruir(char **vec, int largo)
+{
+	if (vec != NULL)
+	{
+		for (int i = 0; i < largo; i++)
+		{
 			delete[] vec[i];
 		}
 		delete[] vec;
 	}
 }
 
-void FrameworkA1::destruir(int** mat, int columnas){
-	if(mat!=NULL){
-		for(int i=0; i < columnas; i++){
-			delete [] mat[i];
+void FrameworkA1::destruir(int **mat, int columnas)
+{
+	if (mat != NULL)
+	{
+		for (int i = 0; i < columnas; i++)
+		{
+			delete[] mat[i];
 		}
 		delete mat;
-	}else
-		cout<<"Matriz Vacia!"<<endl;
+	}
+	else
+		cout << "Matriz Vacia!" << endl;
 }
 
-void FrameworkA1::destruir(int* vec) {
-	if(vec!=NULL){
-		delete [] vec;
+void FrameworkA1::destruir(int *vec)
+{
+	if (vec != NULL)
+	{
+		delete[] vec;
 	}
 }
 
-void FrameworkA1::destruir(NodoLista *&l) {
-    while (l!=NULL) {
-        NodoLista *aux = l;
-        l = l->sig;
-        delete aux;
-    }
+void FrameworkA1::destruir(NodoLista *&l)
+{
+	while (l != NULL)
+	{
+		NodoLista *aux = l;
+		l = l->sig;
+		delete aux;
+	}
 }
 
-void FrameworkA1::destruir(NodoListaAux *&l) {
-    while (l!=NULL) {
-        NodoListaAux *aux = l;
-        l = l->sig;
-        delete aux;
-    }
+void FrameworkA1::destruir(NodoListaAux *&l)
+{
+	while (l != NULL)
+	{
+		NodoListaAux *aux = l;
+		l = l->sig;
+		delete aux;
+	}
 }
 
-void FrameworkA1::destruir(NodoAB *&a) {
-    if (a!=NULL) {
-        FrameworkA1::destruir(a->izq);
-        FrameworkA1::destruir(a->der);
-        delete a;
+void FrameworkA1::destruir(NodoAB *&a)
+{
+	if (a != NULL)
+	{
+		FrameworkA1::destruir(a->izq);
+		FrameworkA1::destruir(a->der);
+		delete a;
 		a = NULL;
-    }
+	}
 }
 
-void FrameworkA1::destruir(NodoAG *&a) {
-    if (a!=NULL) {
-        FrameworkA1::destruir(a->ph);
-        FrameworkA1::destruir(a->sh);
-        delete a;
+void FrameworkA1::destruir(NodoAG *&a)
+{
+	if (a != NULL)
+	{
+		FrameworkA1::destruir(a->ph);
+		FrameworkA1::destruir(a->sh);
+		delete a;
 		a = NULL;
-    }
+	}
 }
 
-
-
-bool FrameworkA1::sonIguales(const char* resultado, const char* esperado){
-	if(resultado==NULL && esperado==NULL)
+bool FrameworkA1::sonIguales(const char *resultado, const char *esperado)
+{
+	if (resultado == NULL && esperado == NULL)
 		return true;
 
-	if(resultado==NULL || esperado==NULL)
+	if (resultado == NULL || esperado == NULL)
 		return false;
-	
+
 	return strcmp(resultado, esperado) == 0;
 }
 
-bool FrameworkA1::sonIguales(int* resultado, int* esperado, int largo){
-	if(resultado==NULL && esperado==NULL)
+bool FrameworkA1::sonIguales(int *resultado, int *esperado, int largo)
+{
+	if (resultado == NULL && esperado == NULL)
 		return true;
 
-	if(resultado==NULL || esperado==NULL)
+	if (resultado == NULL || esperado == NULL)
 		return false;
 
-	for(int i=0; i < largo; i++){
-		if (resultado[i]!=esperado[i])
-			return false; 
-	}	
-	return true;
-}
-
-bool FrameworkA1::sonIguales(int** resultado, int** esperado,int columnas,int filas){
-	if(resultado==NULL && esperado==NULL)
-		return true;
-
-	if(resultado==NULL || esperado==NULL)
-		return false;
-
-	for(int f=0; f < filas; f++){
-		for(int c=0; c < columnas; c++){
-			if (resultado[c][f]!=esperado[c][f])
-				return false;
-		} 
-	}	
-	return true;
-}
-
-bool FrameworkA1::sonIguales(char** resultado, char** esperado, int cantStr){
-	if(resultado==NULL && esperado==NULL)
-		return true;
-
-	if(resultado==NULL || esperado==NULL)
-		return false;
-
-	for(int f=0; f < cantStr; f++){
-		if(strcmp(resultado[f], esperado[f]) != 0) 
+	for (int i = 0; i < largo; i++)
+	{
+		if (resultado[i] != esperado[i])
 			return false;
 	}
 	return true;
 }
 
-bool FrameworkA1::sonIguales(char** resultado, char** esperado, int columnas, int filas) {
-	if(resultado==NULL && esperado==NULL)
+bool FrameworkA1::sonIguales(int **resultado, int **esperado, int columnas, int filas)
+{
+	if (resultado == NULL && esperado == NULL)
 		return true;
 
-	if(resultado==NULL || esperado==NULL)
+	if (resultado == NULL || esperado == NULL)
 		return false;
 
-	for(int f=0; f < filas; f++){
-		for(int c=0; c < columnas; c++){
-			if (resultado[c][f]!=esperado[c][f])
+	for (int f = 0; f < filas; f++)
+	{
+		for (int c = 0; c < columnas; c++)
+		{
+			if (resultado[c][f] != esperado[c][f])
 				return false;
-		} 
-	}	
+		}
+	}
 	return true;
 }
 
-bool FrameworkA1::sonIgualesDatosForma(NodoLista *l1, NodoLista *l2) {
-    if (l1 == NULL && l2 == NULL)
-        return true;
-    if (l1 == NULL || l2 == NULL)
-        return false;
-    if (l1->dato != l2->dato)
-        return false;
-    return sonIgualesDatosForma(l1->sig, l2->sig);
+bool FrameworkA1::sonIguales(char **resultado, char **esperado, int cantStr)
+{
+	if (resultado == NULL && esperado == NULL)
+		return true;
+
+	if (resultado == NULL || esperado == NULL)
+		return false;
+
+	for (int f = 0; f < cantStr; f++)
+	{
+		if (strcmp(resultado[f], esperado[f]) != 0)
+			return false;
+	}
+	return true;
 }
 
-bool FrameworkA1::sonIgualesDatos(NodoLista *l1, NodoLista *l2) {
+bool FrameworkA1::sonIguales(char **resultado, char **esperado, int columnas, int filas)
+{
+	if (resultado == NULL && esperado == NULL)
+		return true;
+
+	if (resultado == NULL || esperado == NULL)
+		return false;
+
+	for (int f = 0; f < filas; f++)
+	{
+		for (int c = 0; c < columnas; c++)
+		{
+			if (resultado[c][f] != esperado[c][f])
+				return false;
+		}
+	}
+	return true;
+}
+
+bool FrameworkA1::sonIgualesDatosForma(NodoLista *l1, NodoLista *l2)
+{
+	if (l1 == NULL && l2 == NULL)
+		return true;
+	if (l1 == NULL || l2 == NULL)
+		return false;
+	if (l1->dato != l2->dato)
+		return false;
+	return sonIgualesDatosForma(l1->sig, l2->sig);
+}
+
+bool FrameworkA1::sonIgualesDatos(NodoLista *l1, NodoLista *l2)
+{
 	int largo1, largo2;
 	int *v1 = listaAVectorOrdenado(l1, largo1);
 	int *v2 = listaAVectorOrdenado(l2, largo2);
@@ -780,22 +842,24 @@ bool FrameworkA1::sonIgualesDatos(NodoLista *l1, NodoLista *l2) {
 		ret = false;
 	else
 		ret = sonIguales(v1, v2, largo1);
-	delete [] v1;
-	delete [] v2;
+	delete[] v1;
+	delete[] v2;
 	return ret;
 }
 
-bool FrameworkA1::sonIgualesDatosForma(NodoAB *a1,NodoAB *a2) {
+bool FrameworkA1::sonIgualesDatosForma(NodoAB *a1, NodoAB *a2)
+{
 	if (a1 == NULL && a2 == NULL)
-        return true;
-    if (a1 == NULL || a2 == NULL)
-        return false;
-    if (a1->dato != a2->dato)
-        return false;
-    return sonIgualesDatosForma(a1->izq, a2->izq) && sonIgualesDatosForma(a1->der, a2->der);
+		return true;
+	if (a1 == NULL || a2 == NULL)
+		return false;
+	if (a1->dato != a2->dato)
+		return false;
+	return sonIgualesDatosForma(a1->izq, a2->izq) && sonIgualesDatosForma(a1->der, a2->der);
 }
 
-bool FrameworkA1::sonIgualesDatos(NodoAB *a1, NodoAB *a2) {
+bool FrameworkA1::sonIgualesDatos(NodoAB *a1, NodoAB *a2)
+{
 	int largo1, largo2;
 	int *v1 = abAVectorOrdenado(a1, largo1);
 	int *v2 = abAVectorOrdenado(a2, largo2);
@@ -804,22 +868,24 @@ bool FrameworkA1::sonIgualesDatos(NodoAB *a1, NodoAB *a2) {
 		ret = false;
 	else
 		ret = sonIguales(v1, v2, largo1);
-	delete [] v1;
-	delete [] v2;
+	delete[] v1;
+	delete[] v2;
 	return ret;
 }
 
-bool FrameworkA1::sonIgualesDatosForma(NodoAG *a1,NodoAG *a2) {
+bool FrameworkA1::sonIgualesDatosForma(NodoAG *a1, NodoAG *a2)
+{
 	if (a1 == NULL && a2 == NULL)
-        return true;
-    if (a1 == NULL || a2 == NULL)
-        return false;
-    if (a1->dato != a2->dato)
-        return false;
-    return sonIgualesDatosForma(a1->ph, a2->ph) && sonIgualesDatosForma(a1->sh, a2->sh);
+		return true;
+	if (a1 == NULL || a2 == NULL)
+		return false;
+	if (a1->dato != a2->dato)
+		return false;
+	return sonIgualesDatosForma(a1->ph, a2->ph) && sonIgualesDatosForma(a1->sh, a2->sh);
 }
 
-bool FrameworkA1::sonIgualesDatos(NodoAG *a1, NodoAG *a2) {
+bool FrameworkA1::sonIgualesDatos(NodoAG *a1, NodoAG *a2)
+{
 	int largo1, largo2;
 	int *v1 = agAVectorOrdenado(a1, largo1);
 	int *v2 = agAVectorOrdenado(a2, largo2);
@@ -828,17 +894,21 @@ bool FrameworkA1::sonIgualesDatos(NodoAG *a1, NodoAG *a2) {
 		ret = false;
 	else
 		ret = sonIguales(v1, v2, largo1);
-	delete [] v1;
-	delete [] v2;
+	delete[] v1;
+	delete[] v2;
 	return ret;
 }
 
-bool FrameworkA1::compartenMemoria(char** vec1, int largoVec1, char** vec2, int largoVec2) {
+bool FrameworkA1::compartenMemoria(char **vec1, int largoVec1, char **vec2, int largoVec2)
+{
 	if (vec1 == NULL || vec2 == NULL)
 		return false;
-	for(int i1=0; i1<largoVec1; i1++) {
-		for(int i2=0; i2<largoVec2; i2++) {
-			if (vec1[i1] == vec2[i2]) {
+	for (int i1 = 0; i1 < largoVec1; i1++)
+	{
+		for (int i2 = 0; i2 < largoVec2; i2++)
+		{
+			if (vec1[i1] == vec2[i2])
+			{
 				return true;
 			}
 		}
@@ -846,13 +916,17 @@ bool FrameworkA1::compartenMemoria(char** vec1, int largoVec1, char** vec2, int 
 	return false;
 }
 
-bool FrameworkA1::compartenMemoria(NodoLista *l1, NodoLista *l2) {
+bool FrameworkA1::compartenMemoria(NodoLista *l1, NodoLista *l2)
+{
 	NodoLista *l1aux = l1;
 	NodoLista *l2aux = l2;
-	while (l1aux != NULL) {
+	while (l1aux != NULL)
+	{
 		l2aux = l2;
-		while (l2aux != NULL) {
-			if (l1aux == l2aux) return true;
+		while (l2aux != NULL)
+		{
+			if (l1aux == l2aux)
+				return true;
 			l2aux = l2aux->sig;
 		}
 		l1aux = l1aux->sig;
@@ -860,7 +934,8 @@ bool FrameworkA1::compartenMemoria(NodoLista *l1, NodoLista *l2) {
 	return false;
 }
 
-bool FrameworkA1::compartenMemoria(int *vec1, int *vec2, int largoVec1, int largoVec2) {
+bool FrameworkA1::compartenMemoria(int *vec1, int *vec2, int largoVec1, int largoVec2)
+{
 	if (vec1 == NULL || vec2 == NULL)
 	{
 		return false;
@@ -872,7 +947,8 @@ bool FrameworkA1::compartenMemoria(int *vec1, int *vec2, int largoVec1, int larg
 		contador2 = 0;
 		while (contador2 < largoVec2)
 		{
-			if (&vec1[contador1] == &vec2[contador2]) return true;
+			if (&vec1[contador1] == &vec2[contador2])
+				return true;
 			contador2++;
 		}
 		contador1++;
@@ -880,23 +956,28 @@ bool FrameworkA1::compartenMemoria(int *vec1, int *vec2, int largoVec1, int larg
 	return false;
 }
 
-void abAVectorPunteros(NodoAB *a1, NodoAB **vec, unsigned int &pos) {
-	if (a1 != NULL) {
+void abAVectorPunteros(NodoAB *a1, NodoAB **vec, unsigned int &pos)
+{
+	if (a1 != NULL)
+	{
 		vec[pos++] = a1;
 		abAVectorPunteros(a1->izq, vec, pos);
 		abAVectorPunteros(a1->der, vec, pos);
 	}
 }
 
-void agAVectorPunteros(NodoAG *a1, NodoAG **vec, unsigned int &pos) {
-	if (a1 != NULL) {
+void agAVectorPunteros(NodoAG *a1, NodoAG **vec, unsigned int &pos)
+{
+	if (a1 != NULL)
+	{
 		vec[pos++] = a1;
 		agAVectorPunteros(a1->ph, vec, pos);
 		agAVectorPunteros(a1->sh, vec, pos);
 	}
 }
 
-bool FrameworkA1::compartenMemoria(NodoAB *a1, NodoAB *a2) {
+bool FrameworkA1::compartenMemoria(NodoAB *a1, NodoAB *a2)
+{
 	unsigned int pos1 = 0, pos2 = 0;
 	unsigned int cant1 = (unsigned int)cantDatos(a1);
 	unsigned int cant2 = (unsigned int)cantDatos(a2);
@@ -905,15 +986,19 @@ bool FrameworkA1::compartenMemoria(NodoAB *a1, NodoAB *a2) {
 	abAVectorPunteros(a1, vec1, pos1);
 	abAVectorPunteros(a2, vec2, pos2);
 
-	for (unsigned int i1=0; i1<cant1; i1++) {
-		for (unsigned int i2=0; i2<cant2; i2++) {
-			if (vec1[i1] == vec2[i2]) return true;
+	for (unsigned int i1 = 0; i1 < cant1; i1++)
+	{
+		for (unsigned int i2 = 0; i2 < cant2; i2++)
+		{
+			if (vec1[i1] == vec2[i2])
+				return true;
 		}
 	}
 	return false;
 }
 
-bool FrameworkA1::compartenMemoria(NodoAG *a1, NodoAG *a2) {
+bool FrameworkA1::compartenMemoria(NodoAG *a1, NodoAG *a2)
+{
 	unsigned int pos1 = 0, pos2 = 0;
 	unsigned int cant1 = (unsigned int)cantDatos(a1);
 	unsigned int cant2 = (unsigned int)cantDatos(a2);
@@ -922,16 +1007,19 @@ bool FrameworkA1::compartenMemoria(NodoAG *a1, NodoAG *a2) {
 	agAVectorPunteros(a1, vec1, pos1);
 	agAVectorPunteros(a2, vec2, pos2);
 
-	for (unsigned int i1=0; i1<cant1; i1++) {
-		for (unsigned int i2=0; i2<cant2; i2++) {
-			if (vec1[i1] == vec2[i2]) return true;
+	for (unsigned int i1 = 0; i1 < cant1; i1++)
+	{
+		for (unsigned int i2 = 0; i2 < cant2; i2++)
+		{
+			if (vec1[i1] == vec2[i2])
+				return true;
 		}
 	}
 	return false;
 }
 
 // Retorna el maximo de un AB no vacio
-int FrameworkA1::maxAB(NodoAB *a) 
+int FrameworkA1::maxAB(NodoAB *a)
 {
 	if (a->izq == NULL && a->der == NULL)
 		return a->dato;
@@ -945,12 +1033,12 @@ int FrameworkA1::maxAB(NodoAB *a)
 }
 
 // Retorna el minimo de un AB no vacio
-int FrameworkA1::minAB(NodoAB *a) 
+int FrameworkA1::minAB(NodoAB *a)
 {
 	if (a->izq == NULL && a->der == NULL)
 		return a->dato;
 	if (a->izq == NULL)
-		return min(minAB(a->der), a->dato); 
+		return min(minAB(a->der), a->dato);
 	if (a->der == NULL)
 		return min(minAB(a->izq), a->dato);
 	int minIzq2 = min(minAB(a->izq), a->dato);
@@ -958,9 +1046,9 @@ int FrameworkA1::minAB(NodoAB *a)
 	return min(minIzq2, minDer2);
 }
 
-bool FrameworkA1::esABB(NodoAB *a) 
+bool FrameworkA1::esABB(NodoAB *a)
 {
-	if (a == NULL) 
+	if (a == NULL)
 		return true;
 	if (a->izq != NULL && maxAB(a->izq) > a->dato)
 		return false;
@@ -969,19 +1057,19 @@ bool FrameworkA1::esABB(NodoAB *a)
 	return esABB(a->izq) && esABB(a->der);
 }
 
-
-
-
-int *FrameworkA1::parsearVectorInt(char *stringDatos, int &largo) {
+int *FrameworkA1::parsearVectorInt(char *stringDatos, int &largo)
+{
 	NodoLista *l = parsearLista(stringDatos, largo);
 	largo = cantDatos(l);
-	if (largo == 0) {
+	if (largo == 0)
+	{
 		destruir(l);
 		return NULL;
 	}
 	int *ret = new int[largo];
 	NodoLista *aux = l;
-	for (int i=0; i<largo; i++) {
+	for (int i = 0; i < largo; i++)
+	{
 		ret[i] = aux->dato;
 		aux = aux->sig;
 	}
@@ -989,32 +1077,42 @@ int *FrameworkA1::parsearVectorInt(char *stringDatos, int &largo) {
 	return ret;
 }
 
-char **FrameworkA1::parsearVectorStrings(char *stringDatos, int &largo) {
+char **FrameworkA1::parsearVectorStrings(char *stringDatos, int &largo)
+{
 	std::size_t largoStr = strlen(stringDatos);
 	char *stringDatosC = FrameworkA1::copioString(stringDatos);
 	int cant = 0;
-	for(unsigned int i=0; i<largoStr; i++) {
-		if (stringDatosC[i] == '\'') {
+	for (unsigned int i = 0; i < largoStr; i++)
+	{
+		if (stringDatosC[i] == '\'')
+		{
 			cant++;
-			for(i++; i<largoStr; i++) {
-				if (stringDatosC[i] == '\'') {
+			for (i++; i < largoStr; i++)
+			{
+				if (stringDatosC[i] == '\'')
+				{
 					break;
 				}
 			}
 		}
 	}
 	largo = cant;
-	if (largo == 0) {
+	if (largo == 0)
+	{
 		delete[] stringDatosC;
 		return NULL;
 	}
-	char** ret = new char*[largo];
+	char **ret = new char *[largo];
 	int pos = 0;
-	for(unsigned int i=0; i<largoStr; i++) {
-		if (stringDatosC[i] == '\'') {
-			char *ini = &stringDatosC[i+1];
-			for(i++; i<largoStr; i++) {
-				if (stringDatosC[i] == '\'') {
+	for (unsigned int i = 0; i < largoStr; i++)
+	{
+		if (stringDatosC[i] == '\'')
+		{
+			char *ini = &stringDatosC[i + 1];
+			for (i++; i < largoStr; i++)
+			{
+				if (stringDatosC[i] == '\'')
+				{
 					stringDatosC[i] = '\0';
 					ret[pos++] = FrameworkA1::copioString(ini);
 					break;
@@ -1022,65 +1120,78 @@ char **FrameworkA1::parsearVectorStrings(char *stringDatos, int &largo) {
 			}
 		}
 	}
-	delete [] stringDatosC;
+	delete[] stringDatosC;
 	return ret;
 }
 
-NodoLista *FrameworkA1::parsearLista(char *stringDatos, int &largo) {
+NodoLista *FrameworkA1::parsearLista(char *stringDatos, int &largo)
+{
 	char *stringDatosC = FrameworkA1::copioString(stringDatos);
 	NodoLista *ret = NULL;
 	NodoLista *ant = NULL;
 	largo = 0;
 	char *next_token1 = NULL;
 	char *token1 = strtok_s(stringDatosC, ", ", &next_token1);
-	while (token1 != NULL) {
+	while (token1 != NULL)
+	{
 		int val = atoi(token1);
 		largo++;
 		NodoLista *n = new NodoLista(val);
-		if (ret == NULL) {
+		if (ret == NULL)
+		{
 			ret = ant = n;
 		}
-		else {
+		else
+		{
 			ant->sig = n;
 			ant = n;
 		}
 		token1 = strtok_s(NULL, ", ", &next_token1);
 	}
-	delete [] stringDatosC;
+	delete[] stringDatosC;
 	return ret;
 }
 
-NodoListaAux* FrameworkA1::splitStringToListaAux(char *stringDatos) {
+NodoListaAux *FrameworkA1::splitStringToListaAux(char *stringDatos)
+{
 	char *stringDatosC = FrameworkA1::copioString(stringDatos);
 	NodoListaAux *ret = NULL;
 	NodoListaAux *ant = NULL;
 	char *next_token1 = NULL;
 	char *token1 = strtok_s(stringDatosC, ", ", &next_token1);
-	while (token1 != NULL) {
+	while (token1 != NULL)
+	{
 		NodoListaAux *n;
-		if(token1[0] == '#'){
+		if (token1[0] == '#')
+		{
 			n = new NodoListaAux(-1, true);
-		}else{
+		}
+		else
+		{
 			int val = atoi(token1);
 			n = new NodoListaAux(val, false);
 		}
-		if (ret == NULL) {
+		if (ret == NULL)
+		{
 			ret = ant = n;
 		}
-		else {
+		else
+		{
 			ant->sig = n;
 			ant = n;
 		}
 		token1 = strtok_s(NULL, ", ", &next_token1);
 	}
-	delete [] stringDatosC;
+	delete[] stringDatosC;
 	return ret;
 }
 
-NodoAB *FrameworkA1::convertListaAuxToAB(NodoListaAux* & l, int &largo){
+NodoAB *FrameworkA1::convertListaAuxToAB(NodoListaAux *&l, int &largo)
+{
 	ColaArray c = crearColaArray((unsigned int)cantDatos(l));
-	NodoAB* a = NULL;
-	if(l==NULL || l->esVacio){
+	NodoAB *a = NULL;
+	if (l == NULL || l->esVacio)
+	{
 		destruir(c);
 		largo = 0;
 		return a;
@@ -1089,45 +1200,52 @@ NodoAB *FrameworkA1::convertListaAuxToAB(NodoListaAux* & l, int &largo){
 	a = new NodoAB(l->dato);
 	encolar(c, a);
 	borrarPpio(l);
-	while(!esVacia(c)){
-		NodoAB* nodo = (NodoAB*)frente(c);
+	while (!esVacia(c))
+	{
+		NodoAB *nodo = (NodoAB *)frente(c);
 		desencolar(c);
-		if(l!=NULL){
-			if (!l->esVacio) {
+		if (l != NULL)
+		{
+			if (!l->esVacio)
+			{
 				largo++;
 				nodo->izq = new NodoAB(l->dato);
 				encolar(c, nodo->izq);
 			}
 			borrarPpio(l);
 		}
-		if(l!=NULL){
-			if (!l->esVacio) {
+		if (l != NULL)
+		{
+			if (!l->esVacio)
+			{
 				largo++;
 				nodo->der = new NodoAB(l->dato);
 				encolar(c, nodo->der);
 			}
 			borrarPpio(l);
 		}
-	}	
+	}
 	destruir(c);
 	return a;
 }
 
-NodoAG *FrameworkA1::convertListaAuxToAG(NodoListaAux* & l, int &largo){
+NodoAG *FrameworkA1::convertListaAuxToAG(NodoListaAux *&l, int &largo)
+{
 	if (l == NULL)
 		return NULL;
 
-	NodoAG* a = NULL;
+	NodoAG *a = NULL;
 	convertListaAuxToAG(l, a, largo);
-	
+
 	return a;
 }
 
-void FrameworkA1::convertListaAuxToAG(NodoListaAux* &l, NodoAG *&a, int &largo){
+void FrameworkA1::convertListaAuxToAG(NodoListaAux *&l, NodoAG *&a, int &largo)
+{
 	if (l == NULL)
 	{
 		a = NULL;
-		return;		
+		return;
 	}
 
 	if (l->esVacio)
@@ -1144,21 +1262,24 @@ void FrameworkA1::convertListaAuxToAG(NodoListaAux* &l, NodoAG *&a, int &largo){
 	convertListaAuxToAG(l, a->sh, largo);
 }
 
-NodoAB* FrameworkA1::parsearAB(char *stringDatos, int &largo) {
+NodoAB *FrameworkA1::parsearAB(char *stringDatos, int &largo)
+{
 	NodoListaAux *listaAB = splitStringToListaAux(stringDatos);
-	NodoAB* ret = convertListaAuxToAB(listaAB, largo);
+	NodoAB *ret = convertListaAuxToAB(listaAB, largo);
 	return ret;
 }
 
-NodoAG* FrameworkA1::parsearAG(char *stringDatos, int &largo) {
+NodoAG *FrameworkA1::parsearAG(char *stringDatos, int &largo)
+{
 	NodoListaAux *listaAux = splitStringToListaAux(stringDatos);
 	largo = 0;
-	NodoAG* ret;
+	NodoAG *ret;
 	convertListaAuxToAG(listaAux, ret, largo);
 	return ret;
 }
 
-void* FrameworkA1::parsearColeccion(const char *stringDatos, int &largo) {
+void *FrameworkA1::parsearColeccion(const char *stringDatos, int &largo)
+{
 	// detecto tipo de dato
 	NodoAB *a;
 	NodoAG *ag;
@@ -1166,52 +1287,59 @@ void* FrameworkA1::parsearColeccion(const char *stringDatos, int &largo) {
 	char **vecStr;
 	int *vecInt;
 
-	if (stringDatos == NULL || stringDatos[0] == '\0') return NULL;
+	if (stringDatos == NULL || stringDatos[0] == '\0')
+		return NULL;
 
 	char *stringDatosC = copioString(stringDatos);
 	unsigned long len = strlen(stringDatosC) + 1;
 
 	bool contieneStr = false;
-	for (unsigned int i = 0; i < len; i++) {
-		if (stringDatosC[i] == '\"') {
+	for (unsigned int i = 0; i < len; i++)
+	{
+		if (stringDatosC[i] == '\"')
+		{
 			contieneStr = true;
 		}
 	}
 
-	char* ini = &stringDatosC[1];
+	char *ini = &stringDatosC[1];
 	stringDatosC[len - 2] = '\0';
 
-	switch (stringDatos[0]) {
-	case '{': // arbol
+	switch (stringDatos[0])
+	{
+	case '{':				  // arbol
 		assert(!contieneStr); // Arboles con datos string no implementado
-		if (stringDatos[1] != '{') { //AB
+		if (stringDatos[1] != '{')
+		{ // AB
 			a = parsearAB(ini, largo);
-			delete [] stringDatosC;
+			delete[] stringDatosC;
 			return a;
 		}
 		else // AG
 		{
 			ini++;
-			stringDatosC[strlen(stringDatosC)-1] = '\0';
+			stringDatosC[strlen(stringDatosC) - 1] = '\0';
 			ag = parsearAG(ini, largo);
-			delete [] stringDatosC;
+			delete[] stringDatosC;
 			return ag;
 		}
-	case '(': // lista
+	case '(':				  // lista
 		assert(!contieneStr); // lista con datos string no implementado
 		l = parsearLista(ini, largo);
-		delete [] stringDatosC;
+		delete[] stringDatosC;
 		return l;
-	case '[': // vector
+	case '[':				  // vector
 		assert(!contieneStr); // vector con datos string no implementado
-		if (stringDatosC[1] == '\'') { // vector string
+		if (stringDatosC[1] == '\'')
+		{ // vector string
 			vecStr = parsearVectorStrings(ini, largo);
-			delete [] stringDatosC;
+			delete[] stringDatosC;
 			return vecStr;
 		}
-		else { // vector int
+		else
+		{ // vector int
 			vecInt = parsearVectorInt(ini, largo);
-			delete [] stringDatosC;
+			delete[] stringDatosC;
 			return vecInt;
 		}
 	}
@@ -1220,102 +1348,153 @@ void* FrameworkA1::parsearColeccion(const char *stringDatos, int &largo) {
 	return NULL;
 }
 
-char *FrameworkA1::serializar(int i) {
+char *FrameworkA1::serializar(int i)
+{
 	return intToStr(i);
 }
 
-char *FrameworkA1::serializar(bool b) {
+char *FrameworkA1::serializar(bool b)
+{
 	char *str;
-	if (b) {
+	if (b)
+	{
 		str = copioString("true");
 	}
-	else {
+	else
+	{
 		str = copioString("false");
 	}
 	return str;
 }
 
-void FrameworkA1::serializarAux(NodoLista *l, char *&str) {
+void FrameworkA1::serializarAux(NodoLista *l, char *&str)
+{
 	if (l == NULL)
 		return;
 	char *strNum = FrameworkA1::serializar(l->dato);
 	concat(str, strNum);
-	delete [] strNum;
+	delete[] strNum;
 	if (l->sig != NULL)
 		concat(str, ",");
 	serializarAux(l->sig, str);
 }
 
-char *FrameworkA1::serializar(NodoLista *l) {
+char *FrameworkA1::serializar(NodoLista *l)
+{
 	char *str;
-	if(l!=NULL){
+	if (l != NULL)
+	{
 		str = copioString("(");
 		serializarAux(l, str);
 		concat(str, ")");
-	}else {
+	}
+	else
+	{
 		str = copioString("()");
 	}
 	return str;
 }
 
-char *FrameworkA1::serializar(NodoAB *a) {
+char *FrameworkA1::serializar(NodoAB *a)
+{
 	char *str;
-	if(a!=NULL){
+	if (a != NULL)
+	{
 		str = abAStrAux(a);
-	}else {
+	}
+	else
+	{
 		str = copioString("{}");
 	}
 	return str;
 }
 
-char *FrameworkA1::serializar(NodoAG *a) {
+char *FrameworkA1::serializar(NodoAG *a)
+{
 	char *str;
-	if(a!=NULL){
+	if (a != NULL)
+	{
 		str = copioString("{{");
 		char *str2 = agAStrAux(a);
 		char *str3 = str2;
-		if (strlen(str3) > 0) str3++;
+		if (strlen(str3) > 0)
+			str3++;
 		append(str, str3);
-		delete [] str2;
+		delete[] str2;
 		append(str, "}}");
-	}else {
+	}
+	else
+	{
 		str = copioString("{{}}");
 	}
 	return str;
 }
 
-char *FrameworkA1::serializar(int *vec, int largo) {
+char *FrameworkA1::serializar(int *vec, int largo)
+{
 	char *str;
-	if(vec!=NULL){
+	if (vec != NULL)
+	{
 		str = copioString("[");
-		for(int i=0; i < largo; i++){
+		for (int i = 0; i < largo; i++)
+		{
 			char *numStr = serializar(vec[i]);
 			concat(str, numStr);
-			delete [] numStr;
-			if (i<largo-1)
+			delete[] numStr;
+			if (i < largo - 1)
 				concat(str, ",");
 		}
 		concat(str, "]");
-	}else {
+	}
+	else
+	{
 		str = copioString("[]");
 	}
 	return str;
 }
 
-char *FrameworkA1::serializar(char **vecStr, int largo) {
+char *FrameworkA1::serializar(char **vecStr, int largo)
+{
 	char *str;
-	if(vecStr!=NULL){
+	if (vecStr != NULL)
+	{
 		str = copioString("[");
-		for(int i=0; i < largo; i++){
+		for (int i = 0; i < largo; i++)
+		{
 			concat(str, "\'");
 			concat(str, vecStr[i]);
 			concat(str, "\'");
-			if (i<largo-1)
+			if (i < largo - 1)
 				concat(str, ",");
 		}
 		concat(str, "]");
-	}else {
+	}
+	else
+	{
 		str = copioString("[]");
 	}
 	return str;
+}
+
+void FrameworkA1::comenzarMemTracking()
+{
+	// Por las dudas, nos aseguramos de empezar de 0
+	MemPlumber::stopAndFreeAllMemory();
+	MemPlumber::start(false);
+}
+
+void FrameworkA1::detenerMemTracking(bool limpiar)
+{
+	if (limpiar)
+		MemPlumber::stopAndFreeAllMemory();
+	else
+		MemPlumber::stop();
+}
+
+int FrameworkA1::hayLeak()
+{
+	size_t leakCount = 0;
+	uint64_t leakSize = 0;
+	MemPlumber::memLeakCheck(leakCount, leakSize, false);
+	return static_cast<int>(leakSize);
 }

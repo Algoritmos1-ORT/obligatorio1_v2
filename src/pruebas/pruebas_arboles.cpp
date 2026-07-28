@@ -3,15 +3,94 @@
 #include "ejercicios/arboles.hpp"
 #include "func_aux.hpp"
 
+static void checkLeak()
+{
+    auto leaked = FrameworkA1::hayLeak();
+    FrameworkA1::detenerMemTracking();
+    if (leaked)
+    {
+        std::ostringstream mensaje;
+        mensaje << "Se perdieron " << leaked << " bytes";
+        FAIL_CHECK(mensaje.str());
+    }
+}
+
+template <typename Funcion, typename Esperado>
+void checkArbolABValor(Funcion funcion, const char *inputTree, Esperado expected)
+{
+    int largo;
+    NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+    FrameworkA1::comenzarMemTracking();
+    auto resultado = funcion(arbol);
+    if (resultado != expected)
+    {
+        FrameworkA1::detenerMemTracking(false);
+        REQUIRE(resultado == expected);
+    }
+    FrameworkA1::destruir(arbol);
+    checkLeak();
+}
+
+template <typename Funcion, typename Esperado>
+void checkArbolAGValor(Funcion funcion, const char *inputTree, Esperado expected)
+{
+    int largo;
+    NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
+    FrameworkA1::comenzarMemTracking();
+    auto resultado = funcion(arbol);
+    if (resultado != expected)
+    {
+        FrameworkA1::detenerMemTracking(false);
+        REQUIRE(resultado == expected);
+    }
+    FrameworkA1::destruir(arbol);
+    checkLeak();
+}
+
+template <typename Funcion>
+void checkArbolABLista(Funcion funcion, const char *inputTree, const char *expected)
+{
+    int largo, largoSolucion;
+    NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+    NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+    FrameworkA1::comenzarMemTracking();
+    NodoLista *resultado = funcion(arbol);
+    if (!FrameworkA1::sonIgualesDatosForma(resultado, solucion))
+    {
+        FrameworkA1::detenerMemTracking(false);
+        char *got = FrameworkA1::serializar(resultado);
+        REQUIRE(got == expected);
+    }
+    FrameworkA1::destruir(arbol);
+    FrameworkA1::destruir(resultado);
+    FrameworkA1::destruir(solucion);
+    checkLeak();
+}
+
+template <typename Funcion>
+void checkArbolAGLista(Funcion funcion, const char *inputTree, const char *expected)
+{
+    int largo, largoSolucion;
+    NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
+    NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
+    FrameworkA1::comenzarMemTracking();
+    NodoLista *resultado = funcion(arbol);
+    if (!FrameworkA1::sonIgualesDatosForma(resultado, solucion))
+    {
+        FrameworkA1::detenerMemTracking(false);
+        char *got = FrameworkA1::serializar(resultado);
+        REQUIRE(got == expected);
+    }
+    FrameworkA1::destruir(arbol);
+    FrameworkA1::destruir(resultado);
+    FrameworkA1::destruir(solucion);
+    checkLeak();
+}
+
 TEST_CASE("PruebaAltura cases", "[PruebaAltura][file:arboles]")
 {
     auto check = [](const char *inputTree, int expected)
-    {
-        int largo;
-        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        REQUIRE (altura(arbol) == expected);
-        FrameworkA1::destruir(arbol);
-    };
+    { checkArbolABValor(altura, inputTree, expected); };
 
     SECTION("{1,5,2}") { check("{1,5,2}", 2); }
     SECTION("{1,#,2,#,5}") { check("{1,#,2,#,5}", 3); }
@@ -52,12 +131,8 @@ TEST_CASE("PruebaSonIguales cases", "[PruebaSonIguales][file:arboles]")
 TEST_CASE("PruebaExisteCaminoConSuma cases", "[PruebaExisteCaminoConSuma][file:arboles]")
 {
     auto check = [](const char *inputTree, int suma, bool expected)
-    {
-        int largo;
-        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        REQUIRE(existeCaminoConSuma(arbol, suma) == expected);
-        FrameworkA1::destruir(arbol);
-    };
+    { checkArbolABValor([suma](NodoAB *arbol)
+                        { return existeCaminoConSuma(arbol, suma); }, inputTree, expected); };
 
     SECTION("empty-0") { check("{}", 0, true); }
     SECTION("3-in-path") { check("{1,2,3}", 4, true); }
@@ -76,12 +151,7 @@ TEST_CASE("PruebaExisteCaminoConSuma cases", "[PruebaExisteCaminoConSuma][file:a
 TEST_CASE("PruebaEsArbolBalanceado cases", "[PruebaEsArbolBalanceado][file:arboles]")
 {
     auto check = [](const char *inputTree, bool expected)
-    {
-        int largo;
-        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        REQUIRE(esArbolBalanceado(arbol) == expected);
-        FrameworkA1::destruir(arbol);
-    };
+    { checkArbolABValor(esArbolBalanceado, inputTree, expected); };
 
     SECTION("{1,5,2}") { check("{1,5,2}", true); }
     SECTION("{1,#,2,#,3}") { check("{1,#,2,#,3}", false); }
@@ -103,25 +173,8 @@ TEST_CASE("PruebaEsArbolBalanceado cases", "[PruebaEsArbolBalanceado][file:arbol
 TEST_CASE("PruebaEnNivel cases", "[PruebaEnNivel][file:arboles]")
 {
     auto check = [](const char *inputTree, int nivel, const char *expected)
-    {
-        int largo;
-        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        NodoLista *resultado = enNivel(arbol, nivel);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            delete[] got;
-            FAIL(oss.str());
-        }
-        FrameworkA1::destruir(arbol);
-        FrameworkA1::destruir(resultado);
-        FrameworkA1::destruir(solucion);
-    };
+    { checkArbolABLista([nivel](NodoAB *arbol)
+                        { return enNivel(arbol, nivel); }, inputTree, expected); };
 
     SECTION("{} level 1") { check("{}", 1, "()"); }
     SECTION("{1,2,3,4,5,6,7} level 1") { check("{1,2,3,4,5,6,7}", 1, "(1)"); }
@@ -139,12 +192,8 @@ TEST_CASE("PruebaEnNivel cases", "[PruebaEnNivel][file:arboles]")
 TEST_CASE("PruebaCantNodosEntreNiveles cases", "[PruebaCantNodosEntreNiveles][file:arboles]")
 {
     auto check = [](const char *inputTree, int desde, int hasta, int expected)
-    {
-        int largo;
-        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        REQUIRE(cantNodosEntreNiveles(arbol, desde, hasta) == expected);
-        FrameworkA1::destruir(arbol);
-    };
+    { checkArbolABValor([desde, hasta](NodoAB *arbol)
+                        { return cantNodosEntreNiveles(arbol, desde, hasta); }, inputTree, expected); };
 
     SECTION("{1,2,3,4,5,6,7},1,1") { check("{1,2,3,4,5,6,7}", 1, 1, 1); }
     SECTION("{1,2,3,4,5,6,7},1,2") { check("{1,2,3,4,5,6,7}", 1, 2, 3); }
@@ -161,25 +210,8 @@ TEST_CASE("PruebaCantNodosEntreNiveles cases", "[PruebaCantNodosEntreNiveles][fi
 TEST_CASE("PruebaCamino cases", "[PruebaCamino][file:arboles]")
 {
     auto check = [](const char *inputTree, int dato, const char *expected)
-    {
-        int largo;
-        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        NodoLista *resultado = camino(arbol, dato);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            delete[] got;
-            FAIL(oss.str());
-        }
-        FrameworkA1::destruir(arbol);
-        FrameworkA1::destruir(resultado);
-        FrameworkA1::destruir(solucion);
-    };
+    { checkArbolABLista([dato](NodoAB *arbol)
+                        { return camino(arbol, dato); }, inputTree, expected); };
 
     SECTION("9") { check("{8,3,10,1,5,9,13}", 9, "(8,10,9)"); }
     SECTION("root") { check("{4}", 4, "(4)"); }
@@ -459,25 +491,8 @@ TEST_CASE("PruebaEsPrefijo cases", "[PruebaEsPrefijo][file:arboles]")
 TEST_CASE("PruebaCaminoAG cases", "[PruebaCaminoAG][file:arboles]")
 {
     auto check = [](const char *inputTree, int dato, const char *expected)
-    {
-        int largoTree;
-        NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largoTree);
-        NodoLista *resultado = caminoAG(arbol, dato);
-        int largoSolucion;
-        NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            delete[] got;
-            FAIL(oss.str());
-        }
-        FrameworkA1::destruir(arbol);
-        FrameworkA1::destruir(resultado);
-        FrameworkA1::destruir(solucion);
-    };
+    { checkArbolAGLista([dato](NodoAG *arbol)
+                        { return caminoAG(arbol, dato); }, inputTree, expected); };
 
     SECTION("single-1") { check("{{1}}", 1, "(1)"); }
     SECTION("single-5") { check("{{1}}", 5, "()"); }

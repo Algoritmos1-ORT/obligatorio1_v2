@@ -1,12 +1,12 @@
 // Comentar la siguiente linea si es DLL
-#define FRAMEWORKA1DLL_API  
+#define FRAMEWORKA1DLL_API
 
 // Descomentar las siguiente linea si es DLL
 /*
 #ifdef FRAMEWORKA1DLL_EXPORTS
-#define FRAMEWORKA1DLL_API __declspec(dllexport) 
+#define FRAMEWORKA1DLL_API __declspec(dllexport)
 #else
-#define FRAMEWORKA1DLL_API __declspec(dllimport) 
+#define FRAMEWORKA1DLL_API __declspec(dllimport)
 #endif
 */
 
@@ -17,8 +17,10 @@
 #include <iomanip>
 #include <cstring>
 #include <cmath>
-#include <algorithm> 
+#include <algorithm>
+
 using namespace std;
+
 #include "definiciones.hpp"
 #include "cola_array.hpp"
 #include "func_aux_s.hpp"
@@ -28,7 +30,7 @@ namespace FrameworkA1
 
 	// Funciones de impresion
 	/*
-	PRE: 
+	PRE:
 	POS: imprime resultado esp vs rec
 	*/
 	FRAMEWORKA1DLL_API void imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec);
@@ -38,32 +40,32 @@ namespace FrameworkA1
 	*/
 	FRAMEWORKA1DLL_API void imprimirEsperadoVsRecibido(NodoLista *esp, NodoLista *rec, const char *inputParametersFormated);
 	/*
-	PRE: 
+	PRE:
 	POS: imprime resultado esp vs rec y tambien los paramtros de entrada
 	*/
 	FRAMEWORKA1DLL_API void imprimirEsperadoVsRecibido(NodoAB *esp, NodoAB *rec, const char *inputParametersFormated);
 	/*
-	PRE: 
+	PRE:
 	POS: imprime resultado esp vs rec y tambien los paramtros de entrada
 	*/
 	FRAMEWORKA1DLL_API void imprimirEsperadoVsRecibido(NodoAG *esp, NodoAG *rec, const char *inputParametersFormated);
 	/*
-	PRE: 
+	PRE:
 	POS: imprime resultado esp vs rec y tambien los paramtros de entrada
 	*/
 	FRAMEWORKA1DLL_API void imprimirEsperadoVsRecibido(bool esp, bool rec, const char *inputParametersFormated);
 	/*
-	PRE: 
+	PRE:
 	POS: imprime resultado esp vs rec y tambien los paramtros de entrada
 	*/
 	FRAMEWORKA1DLL_API void imprimirEsperadoVsRecibido(int esp, int rec, const char *inputParametersFormated);
 	/*
-	PRE: 
+	PRE:
 	POS: imprime resultado esp vs rec y tambien los paramtros de entrada
 	*/
 	FRAMEWORKA1DLL_API void imprimirEsperadoVsRecibido(const char *esp, const char *rec, const char *inputParametersFormated);
 	/*
-	PRE: 
+	PRE:
 	POS: si res es true, incrementa correctos en 1, sino incrementa error en 1
 	*/
 	FRAMEWORKA1DLL_API void ver(bool res, int &correctos, int &error);
@@ -72,36 +74,35 @@ namespace FrameworkA1
 	PRE:
 	POS: imprime el resultado de las pruebas para una funcion determinada
 	*/
-	FRAMEWORKA1DLL_API void imprimirResultadoPrueba(const char *nomFuncion, int &nroPrueba, int &correctos, int &error, 
-		int &correctosTotal, int &errorTotal, int &ejCorrectosTotal, int &ejErrorTotal);
-
+	FRAMEWORKA1DLL_API void imprimirResultadoPrueba(const char *nomFuncion, int &nroPrueba, int &correctos, int &error,
+													int &correctosTotal, int &errorTotal, int &ejCorrectosTotal, int &ejErrorTotal);
 
 	// Funciones de comparacion
 	/*
 	Pre: los vectores deben tener el largo largo
 	Pos: Devuelve true si los string resultado y esperado son iguales
 	*/
-	FRAMEWORKA1DLL_API bool sonIguales(const char* resultado, const char* esperado);
+	FRAMEWORKA1DLL_API bool sonIguales(const char *resultado, const char *esperado);
 	/*
 	Pre: los vectores deben tener el largo largo
 	Pos: Devuelve true si los vectores resultado y esperado son iguales
 	*/
-	FRAMEWORKA1DLL_API bool sonIguales(int* resultado, int* esperado, int largo);
+	FRAMEWORKA1DLL_API bool sonIguales(int *resultado, int *esperado, int largo);
 	/*
 	Pre: debe recibir dos matrices que deben tener las columnas y filas indicadas
 	Pos: Devuelve true si las matrices de enteros resultado y esperado son iguales
 	*/
-	FRAMEWORKA1DLL_API bool sonIguales(int** resultado, int** esperado, int columnas, int filas);
+	FRAMEWORKA1DLL_API bool sonIguales(int **resultado, int **esperado, int columnas, int filas);
 	/*
 	Pre: debe recibir dos matrices de char que deben tener las columnas y filas indicadas
 	Pos: Devuelve true si las matrices de char resultado y esperado son iguales
 	*/
-	FRAMEWORKA1DLL_API bool sonIguales(char** resultado, char** esperado, int columnas, int filas);
+	FRAMEWORKA1DLL_API bool sonIguales(char **resultado, char **esperado, int columnas, int filas);
 	/*
 	PRE: debe recibir dos vectores de strings de largo filas
 	POS: devuelve true si las matrices resultado y esperado son iguales
 	*/
-	FRAMEWORKA1DLL_API bool sonIguales(char** resultado, char** esperado, int cantStr);
+	FRAMEWORKA1DLL_API bool sonIguales(char **resultado, char **esperado, int cantStr);
 	/*
 	PRE:
 	POS: devuelve true si las listas tienen los mismos datos y misma forma
@@ -116,7 +117,7 @@ namespace FrameworkA1
 	PRE:
 	POS: devuelve true si los arboles tienen los mismos datos y misma forma
 	*/
-	FRAMEWORKA1DLL_API bool sonIgualesDatosForma(NodoAB *a1, NodoAB *a2); 
+	FRAMEWORKA1DLL_API bool sonIgualesDatosForma(NodoAB *a1, NodoAB *a2);
 	/*
 	PRE:
 	POS: devuelve true si los arboles tienen los mismos datos
@@ -126,7 +127,7 @@ namespace FrameworkA1
 	PRE:
 	POS: devuelve true si los arboles tienen los mismos datos y misma forma
 	*/
-	FRAMEWORKA1DLL_API bool sonIgualesDatosForma(NodoAG *a1, NodoAG *a2); 
+	FRAMEWORKA1DLL_API bool sonIgualesDatosForma(NodoAG *a1, NodoAG *a2);
 	/*
 	PRE:
 	POS: devuelve true si los arboles tienen los mismos datos
@@ -136,7 +137,7 @@ namespace FrameworkA1
 	PRE: debe recibir dos matrices de strings que deben tener los largos indicados
 	POS: devuelve true si los strings en los vectores comparten memoria
 	*/
-	FRAMEWORKA1DLL_API bool compartenMemoria(char** vec1, int largoVec1, char** vec2, int largoVec2);
+	FRAMEWORKA1DLL_API bool compartenMemoria(char **vec1, int largoVec1, char **vec2, int largoVec2);
 	/*
 	PRE:
 	POS: devuelve true si l1 y l2 comparten memoria
@@ -164,23 +165,22 @@ namespace FrameworkA1
 	*/
 	FRAMEWORKA1DLL_API bool esABB(NodoAB *a);
 
-
 	// Funciones de Destruccion
 	/*
 	PRE: debe recibir un vector de strings del largo indicado
 	POS: destruye vector vec
 	*/
-	FRAMEWORKA1DLL_API void destruir(char** vec, int largo);
+	FRAMEWORKA1DLL_API void destruir(char **vec, int largo);
 	/*
-	PRE: debe recibir un vector de int 
+	PRE: debe recibir un vector de int
 	POS: destruye vector vec
 	*/
-	FRAMEWORKA1DLL_API void destruir(int* vec);
+	FRAMEWORKA1DLL_API void destruir(int *vec);
 	/*
 	PRE: debe recibir una matriz que debe tener las columnas indicadas
 	POS: destruye matriz mat
 	*/
-	FRAMEWORKA1DLL_API void destruir(int** mat, int columnas);
+	FRAMEWORKA1DLL_API void destruir(int **mat, int columnas);
 	/*
 	PRE:
 	POS: destruye la lista l
@@ -197,9 +197,8 @@ namespace FrameworkA1
 	*/
 	FRAMEWORKA1DLL_API void destruir(NodoAG *&a);
 
-
 	/*
-	PRE: 
+	PRE:
 	POS: devuleve copia de str sin compartir memoria. Se debe destruir con delete []
 	*/
 	FRAMEWORKA1DLL_API char *copioString(const char *str);
@@ -219,7 +218,7 @@ namespace FrameworkA1
 	POS: convierte stringDatos a un arbol, lista, vector int o vector strings.
 		 se debe castear al tipo (NodoAB *), (NodoAG *), (NodoLista *), (int *), (char **)
 	*/
-	FRAMEWORKA1DLL_API void* parsearColeccion(const char *stringDatos, int &largo);
+	FRAMEWORKA1DLL_API void *parsearColeccion(const char *stringDatos, int &largo);
 
 	/*
 	PRE:
@@ -256,5 +255,23 @@ namespace FrameworkA1
 	POS: retorna un string a partir de vector de strings. Se debe liberar la memoria retornada con delete []
 	*/
 	FRAMEWORKA1DLL_API char *serializar(char **vecStr, int largo);
+
+	/*
+	PRE:
+	POS: comienza a trackear uso de memoria
+	*/
+	FRAMEWORKA1DLL_API void comenzarMemTracking();
+
+	/*
+	PRE:
+	POS: deja de trackear uso de memoria. Limpia o no la memoria (default true).
+	*/
+	FRAMEWORKA1DLL_API void detenerMemTracking(bool limpiar = true);
+
+	/*
+	PRE:
+	POS: devuelve la cantidad de bytes leakeados
+	*/
+	FRAMEWORKA1DLL_API int hayLeak();
 
 };
