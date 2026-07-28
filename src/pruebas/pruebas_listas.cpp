@@ -3,7 +3,7 @@
 #include "ejercicios/listas.hpp"
 #include "func_aux.hpp"
 
-void checkLeak()
+static void checkLeak()
 {
     auto leaked = FrameworkA1::hayLeak();
     FrameworkA1::detenerMemTracking();

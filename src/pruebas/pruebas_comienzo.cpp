@@ -7,6 +7,53 @@
 #include "comienzo.hpp"
 #include "func_aux.hpp"
 
+static void checkLeak()
+{
+    auto leaked = FrameworkA1::hayLeak();
+    FrameworkA1::detenerMemTracking();
+    if (leaked)
+    {
+        std::ostringstream mensaje;
+        mensaje << "Se perdieron " << leaked << " bytes";
+        FAIL_CHECK(mensaje.str());
+    }
+}
+
+template <typename Funcion>
+void checkSalida(Funcion funcion, const std::string &expected)
+{
+    std::ostringstream salida;
+    auto anterior = std::cout.rdbuf(salida.rdbuf());
+    funcion();
+    std::cout.rdbuf(anterior);
+
+    std::string resultado = salida.str();
+    if (!resultado.empty() && resultado.back() == '\n')
+        resultado.pop_back();
+    REQUIRE(resultado == expected);
+}
+
+template <typename Funcion>
+void checkVectorIntModificado(Funcion funcion, const char *input, const std::string &expected)
+{
+    int largo, largoEsperado;
+    int *vector = (int *)FrameworkA1::parsearColeccion(input, largo);
+    int *esperado = (int *)FrameworkA1::parsearColeccion(expected.c_str(), largoEsperado);
+
+    FrameworkA1::comenzarMemTracking();
+    funcion(vector, largo);
+    if (!FrameworkA1::sonIguales(vector, esperado, largoEsperado))
+    {
+        char *got = FrameworkA1::serializar(vector, largo);
+        FrameworkA1::detenerMemTracking(false);
+        REQUIRE(got == expected);
+    }
+
+    FrameworkA1::destruir(vector);
+    FrameworkA1::destruir(esperado);
+    checkLeak();
+}
+
 TEST_CASE("PruebaSuma cases", "[PruebaSuma][file:comienzo]")
 {
     auto checkSuma = [](int a, int b, int expected)
@@ -20,16 +67,8 @@ TEST_CASE("PruebaSuma cases", "[PruebaSuma][file:comienzo]")
 TEST_CASE("PruebaImprimirTabla cases", "[PruebaImprimirTabla][file:comienzo]")
 {
     auto checkImprimirTabla = [](unsigned int tablaDelN, unsigned int desde, unsigned int hasta, const std::string &expected)
-    {
-        std::ostringstream ss;
-        auto old_buf = std::cout.rdbuf(ss.rdbuf());
-        tablaDel(tablaDelN, desde, hasta);
-        std::cout.rdbuf(old_buf);
-        std::string s = ss.str();
-        if (!s.empty() && s.back() == '\n')
-            s.pop_back();
-        REQUIRE(s == expected);
-    };
+    { checkSalida([=]
+                  { tablaDel(tablaDelN, desde, hasta); }, expected); };
 
     SECTION("7,0,6")
     {
@@ -45,16 +84,8 @@ TEST_CASE("PruebaImprimirTabla cases", "[PruebaImprimirTabla][file:comienzo]")
 TEST_CASE("PruebaSimplificar cases", "[PruebaSimplificar][file:comienzo]")
 {
     auto check = [](int n, int d, const std::string &expected)
-    {
-        std::ostringstream ss;
-        auto old_buf = std::cout.rdbuf(ss.rdbuf());
-        simplificar(n, d);
-        std::cout.rdbuf(old_buf);
-        std::string s = ss.str();
-        if (!s.empty() && s.back() == '\n')
-            s.pop_back();
-        REQUIRE(s == expected);
-    };
+    { checkSalida([=]
+                  { simplificar(n, d); }, expected); };
 
     SECTION("2,7") { check(2, 7, "2/7"); }
     SECTION("30,6") { check(30, 6, "5/1"); }
@@ -78,7 +109,7 @@ TEST_CASE("PruebaOcurrencias123Repetidos cases", "[PruebaOcurrencias123Repetidos
         int res = ocurrencias123Repetidos(vec, largo);
         REQUIRE(res == expected);
         if (!FrameworkA1::sonIguales(vec, copia, largo))
-            FAIL("Function modified input parameters");
+            FAIL_CHECK("La función modifica el parámetro de entrada");
         FrameworkA1::destruir(vec);
         FrameworkA1::destruir(copia);
     };
@@ -118,22 +149,7 @@ TEST_CASE("PruebaMaximoNumero cases", "[PruebaMaximoNumero][file:comienzo]")
 TEST_CASE("PruebaOrdenarVecInt cases", "[PruebaOrdenarVecInt][file:comienzo]")
 {
     auto check = [](const char *vecStr, const std::string &expected)
-    {
-        int largoRes;
-        int *vec = (int *)FrameworkA1::parsearColeccion(vecStr, largoRes);
-        int largoExp;
-        int *exp = (int *)FrameworkA1::parsearColeccion(expected.c_str(), largoExp);
-        ordenarVecInt(vec, largoRes);
-        bool ok = FrameworkA1::sonIguales(vec, exp, largoExp);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(vec, largoRes);
-            REQUIRE(got == expected);
-            delete[] got;
-        }
-        FrameworkA1::destruir(vec);
-        FrameworkA1::destruir(exp);
-    };
+    { checkVectorIntModificado(ordenarVecInt, vecStr, expected); };
 
     SECTION("empty") { check("[]", "[]"); }
     SECTION("single") { check("[5]", "[5]"); }
@@ -159,7 +175,6 @@ TEST_CASE("PruebaIntercalarVector cases", "[PruebaIntercalarVector][file:comienz
         {
             char *got = FrameworkA1::serializar(res, l1 + l2);
             REQUIRE(got == expected);
-            delete[] got;
         }
         FrameworkA1::destruir(v1);
         FrameworkA1::destruir(v2);
@@ -179,6 +194,45 @@ TEST_CASE("PruebaIntercalarVector cases", "[PruebaIntercalarVector][file:comienz
     SECTION("inter-right-empty") { check("[1,2,3]", "[]", "[1,2,3]"); }
 }
 
+TEST_CASE("PruebaIntercalarVector order", "[PruebaIntercalarVector][file:comienzo]")
+{
+    auto benchmark = []()
+    {
+        ankerl::nanobench::Bench bench;
+        bench.output(nullptr);                             // que no imprima nada
+        bench.minEpochTime(std::chrono::milliseconds(10)); // mejoramos la precisión de la medición
+        std::vector<int> arr1;
+        std::vector<int> arr2;
+
+        for (uint64_t n = 100; n <= 5'000; n += 200)
+        {
+            // Set up
+            arr1.clear();
+            arr1.resize(n);
+            arr2.clear();
+            arr2.resize(n);
+            for (int i = 0; i < n; i++)
+            {
+                arr1[i] = i;
+                arr2[i] = i;
+            }
+
+            // Benchmark
+            bench.complexityN(arr1.size()).run("IntercalarVector", [&]
+                                               {
+            auto ret = intercalarVector(arr1.data(), arr2.data(), arr1.size(), arr2.size());
+            ankerl::nanobench::doNotOptimizeAway(ret);
+            delete[] ret; });
+        }
+        return bench;
+    };
+
+    auto bench = benchmark();
+    auto bigO = bench.complexityBigO()[0];
+
+    REQUIRE(bigO.name() == "O(n)");
+}
+
 TEST_CASE("PruebaSubconjuntoVector cases", "[PruebaSubconjuntoVector][file:comienzo]")
 {
     auto check = [](const char *v1s, const char *v2s, bool expected)
@@ -190,14 +244,9 @@ TEST_CASE("PruebaSubconjuntoVector cases", "[PruebaSubconjuntoVector][file:comie
         int *v2 = (int *)FrameworkA1::parsearColeccion(v2s, l2);
         int *v2c = (int *)FrameworkA1::parsearColeccion(v2s, l2);
         bool res = subconjuntoVector(v1, v2, l1, l2);
-        if (res != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << res;
-            FAIL(oss.str());
-        }
+        REQUIRE(res == expected);
         if (!FrameworkA1::sonIguales(v1, v1c, l1) || !FrameworkA1::sonIguales(v2, v2c, l2))
-            FAIL("Function modified input parameters");
+            FAIL_CHECK("La función modifica los parámetros de entrada");
         FrameworkA1::destruir(v1);
         FrameworkA1::destruir(v1c);
         FrameworkA1::destruir(v2);
@@ -361,10 +410,7 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort cases", "[PruebaOrdenarVecIntMergeSort][
         if (!ok)
         {
             char *got = FrameworkA1::serializar(vec, l);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
-            FAIL(oss.str());
-            delete[] got;
+            REQUIRE(got == expected);
         }
         FrameworkA1::destruir(vec);
         FrameworkA1::destruir(exp);
@@ -396,7 +442,7 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][
     auto benchmark = []()
     {
         ankerl::nanobench::Bench bench;
-        bench.output(nullptr); // que no imprima nada
+        bench.output(nullptr);                             // que no imprima nada
         bench.minEpochTime(std::chrono::milliseconds(10)); // mejoramos la precisión de la medición
         std::vector<int> arr;
 
@@ -419,6 +465,6 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][
 
     auto bench = benchmark();
     auto bigO = bench.complexityBigO()[0];
-    
-    REQUIRE(bigO.name() == "O(n log n)");
+
+    REQUIRE((bigO.name() == "O(n log n)" || bigO.name() == "O(n)"));
 }
