@@ -22,7 +22,53 @@ Para recompilar luego de modificar archivos, basta con ejecutar nuevamente:
 cmake --build build
 ```
 
+## Compilación con Docker
+
+El `Dockerfile` incluye CMake, un compilador de C++ y `make` como herramienta de compilación. Primero, crear la imagen desde la raíz del proyecto:
+
+```bash
+docker buildx build --load -t obligatorio1 .
+```
+
+La opción `--load` deja la imagen construida disponible para los comandos `docker run`. Si Docker informa que `buildx` no está instalado, se debe instalar o habilitar ese componente de Docker antes de ejecutar el comando.
+
+Luego, montar el proyecto en el contenedor y compilarlo. Se usa `build-docker` para no mezclar la caché de CMake del contenedor con una compilación local:
+
+```bash
+docker run --rm -v "$PWD":/workspace obligatorio1 \
+  cmake -S . -B build-docker
+docker run --rm -v "$PWD":/workspace obligatorio1 \
+  cmake --build build-docker
+```
+
+Para ejecutar las pruebas desde el contenedor:
+
+```bash
+docker run --rm -v "$PWD":/workspace obligatorio1 \
+  ./build-docker/obligatorio1
+```
+
+También se puede abrir una terminal dentro del contenedor por si se quiere ejecutar los comandos directamente:
+
+```bash
+docker run --rm -it -v "$PWD":/workspace obligatorio1
+```
+
+### Consideración según plataforma
+
+Estos comandos funcionan en macOS y Linux con una terminal compatible con Bash o Zsh. En Windows se recomienda usar Docker Desktop y PowerShell; para montar el directorio actual, usar `${PWD}`:
+
+```powershell
+docker buildx build --load -t obligatorio1 .
+docker run --rm -v "${PWD}:/workspace" obligatorio1 cmake -S . -B build-docker
+docker run --rm -v "${PWD}:/workspace" obligatorio1 cmake --build build-docker
+docker run --rm -v "${PWD}:/workspace" obligatorio1 ./build-docker/obligatorio1
+```
+
+En Windows y macOS, Docker Desktop normalmente administra los permisos y Buildx. En Linux, si aparece un error de permiso para `/var/run/docker.sock`, ejecutar Docker con `sudo` o configurar el acceso al grupo `docker` según la instalación local.
+
 ## VSCode
+
 Desde el Visual Studio Code, con las extensiones recomendadas que posiblemente sugiera por defecto, se puede hacer compilar, ejecutar, o debuggear con los íconos debajo:
 
 ![VSCode tools para CMake](./assets/images/vscode.png)
