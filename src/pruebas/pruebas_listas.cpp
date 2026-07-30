@@ -26,9 +26,9 @@ void checkListaNueva(Funcion funcion, const char *inputLista, const char *expect
     {
         char *got = FrameworkA1::serializar(resultado);
         INFO("Esperado: " << expected << " — Recibido: " << got);
-        CHECK(ok);
         delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(copiaLista);
@@ -59,9 +59,9 @@ void checkListaModificada(Funcion funcion, const char *inputLista, const char *e
     {
         char *got = FrameworkA1::serializar(lista);
         INFO("Esperado: " << expected << " — Recibido: " << got);
-        CHECK(ok);
         delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(solucion);
@@ -88,9 +88,9 @@ void checkDosListasNuevas(Funcion funcion, const char *inputLista1, const char *
     {
         char *got = FrameworkA1::serializar(resultado);
         INFO("Esperado: " << expected << " — Recibido: " << got);
-        CHECK(ok);
         delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista1);
     FrameworkA1::destruir(lista2);
@@ -142,9 +142,9 @@ void checkListaConSecuenciaModificada(Funcion funcion, const char *inputLista, c
     {
         char *got = FrameworkA1::serializar(lista);
         INFO("Esperado: " << expected << " — Recibido: " << got);
-        CHECK(ok);
         delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(secuencia);
@@ -288,7 +288,8 @@ TEST_CASE("PruebaIntercalarRec cases", "[PruebaIntercalarRec][file:listas]")
 TEST_CASE("PruebaInsComFin cases", "[PruebaInsComFin][file:listas]")
 {
     auto check = [](const char *inputLista, int n, const char *expected)
-    { checkListaNueva([n](NodoLista *lista) { return insComFin(lista, n); }, inputLista, expected); };
+    { checkListaNueva([n](NodoLista *lista)
+                      { return insComFin(lista, n); }, inputLista, expected); };
 
     SECTION("(1,2,1) x=0") { check("(1,2,1)", 0, "(0,1,2,1,0)"); }
     SECTION("(1,2,3,4) x=5") { check("(1,2,3,4)", 5, "(5,4,3,2,1,5)"); }
@@ -377,7 +378,8 @@ TEST_CASE("PruebaEliminarSecuencia cases", "[PruebaEliminarSecuencia][file:lista
 TEST_CASE("PruebaMoverNodo cases", "[PruebaMoverNodo][file:listas]")
 {
     auto check = [](const char *inputListaOriginal, unsigned int inicial, unsigned int final, const char *expected)
-    { checkListaModificada([inicial, final](NodoLista *&lista) { moverNodo(lista, inicial, final); }, inputListaOriginal, expected); };
+    { checkListaModificada([inicial, final](NodoLista *&lista)
+                           { moverNodo(lista, inicial, final); }, inputListaOriginal, expected); };
 
     SECTION("move 1->2") { check("(1,2,3,4,5,6,7,8,9,0)", 1, 2, "(2,1,3,4,5,6,7,8,9,0)"); }
     SECTION("move 1->5") { check("(1,2,3,4,5,6,7,8,9,0)", 1, 5, "(2,3,4,5,1,6,7,8,9,0)"); }
