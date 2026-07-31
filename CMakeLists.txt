@@ -21,6 +21,7 @@ add_executable(obligatorio1
     src/pruebas/pruebas_arboles.cpp
     src/pruebas/pruebas_listas.cpp
     src/pruebas/pruebas_comienzo.cpp
+    src/pruebas/mem_tracking_fixture.cpp
 )
 
 target_include_directories(obligatorio1 PRIVATE

@@ -2,18 +2,7 @@
 #include "catch_amalgamated.hpp"
 #include "ejercicios/listas.hpp"
 #include "func_aux.hpp"
-
-static void checkLeak()
-{
-    auto leaked = FrameworkA1::hayLeak();
-    FrameworkA1::detenerMemTracking();
-    if (leaked)
-    {
-        ostringstream oss;
-        oss << "Se perdieron " << leaked << " bytes";
-        FAIL_CHECK(oss.str());
-    }
-}
+#include "mem_tracking_fixture.hpp"
 
 template <typename Funcion>
 void checkListaNueva(Funcion funcion, const char *inputLista, const char *expected)
@@ -25,7 +14,8 @@ void checkListaNueva(Funcion funcion, const char *inputLista, const char *expect
     int largoSolucion;
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
 
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     NodoLista *resultado = funcion(lista);
 
     bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
@@ -35,17 +25,15 @@ void checkListaNueva(Funcion funcion, const char *inputLista, const char *expect
     if (!ok)
     {
         char *got = FrameworkA1::serializar(resultado);
-        FrameworkA1::detenerMemTracking(false); // no queremos que se limpie 'got'
-        REQUIRE(got == expected);               // HACK: Siempre falso, pero muestra bien los strings
-        // La ejecución termina aquí, no se ejecuta el resto de los checks
-        // (la memoria queda colgada, pero no importa)
+        INFO("Esperado: " << expected << " — Recibido: " << got);
+        delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(copiaLista);
     FrameworkA1::destruir(solucion);
     FrameworkA1::destruir(resultado);
-    checkLeak();
 
     if (!parametrosNoModificados)
         FAIL_CHECK("La función modifica los parámetros de entrada");
@@ -62,20 +50,21 @@ void checkListaModificada(Funcion funcion, const char *inputLista, const char *e
     int largoSolucion;
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
 
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     funcion(lista);
 
     bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
     if (!ok)
     {
         char *got = FrameworkA1::serializar(lista);
-        FrameworkA1::detenerMemTracking(false); // no queremos que se limpie 'got'
-        REQUIRE(got == expected);               // HACK: Siempre falso, pero muestra bien los strings
+        INFO("Esperado: " << expected << " — Recibido: " << got);
+        delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(solucion);
-    checkLeak();
 }
 
 template <typename Funcion>
@@ -88,7 +77,8 @@ void checkDosListasNuevas(Funcion funcion, const char *inputLista1, const char *
     NodoLista *copiaLista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
 
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     NodoLista *resultado = funcion(lista1, lista2);
 
     bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
@@ -97,9 +87,10 @@ void checkDosListasNuevas(Funcion funcion, const char *inputLista1, const char *
     if (!ok)
     {
         char *got = FrameworkA1::serializar(resultado);
-        FrameworkA1::detenerMemTracking(false);
-        REQUIRE(got == expected);
+        INFO("Esperado: " << expected << " — Recibido: " << got);
+        delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista1);
     FrameworkA1::destruir(lista2);
@@ -107,7 +98,6 @@ void checkDosListasNuevas(Funcion funcion, const char *inputLista1, const char *
     FrameworkA1::destruir(copiaLista2);
     FrameworkA1::destruir(solucion);
     FrameworkA1::destruir(resultado);
-    checkLeak();
 
     if (!parametrosNoModificados)
         FAIL_CHECK("La función modifica los parámetros de entrada");
@@ -122,10 +112,12 @@ void checkPredicadoLista(Funcion funcion, const char *inputLista, bool expected)
     NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
     NodoLista *copiaLista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
 
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     bool resultado = funcion(lista);
     bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
-    REQUIRE(resultado == expected);
-    REQUIRE(parametrosNoModificados);
+    CHECK(resultado == expected);
+    CHECK(parametrosNoModificados);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(copiaLista);
@@ -140,7 +132,8 @@ void checkListaConSecuenciaModificada(Funcion funcion, const char *inputLista, c
     NodoLista *copiaSecuencia = (NodoLista *)FrameworkA1::parsearColeccion(inputSecuencia, largo);
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
 
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     funcion(lista, secuencia);
 
     bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
@@ -148,15 +141,15 @@ void checkListaConSecuenciaModificada(Funcion funcion, const char *inputLista, c
     if (!ok)
     {
         char *got = FrameworkA1::serializar(lista);
-        FrameworkA1::detenerMemTracking(false);
-        REQUIRE(got == expected);
+        INFO("Esperado: " << expected << " — Recibido: " << got);
+        delete[] got;
     }
+    CHECK(ok);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(secuencia);
     FrameworkA1::destruir(copiaSecuencia);
     FrameworkA1::destruir(solucion);
-    checkLeak();
 
     if (!secuenciaNoModificada)
         FAIL_CHECK("La función modifica la secuencia a eliminar");
@@ -295,7 +288,8 @@ TEST_CASE("PruebaIntercalarRec cases", "[PruebaIntercalarRec][file:listas]")
 TEST_CASE("PruebaInsComFin cases", "[PruebaInsComFin][file:listas]")
 {
     auto check = [](const char *inputLista, int n, const char *expected)
-    { checkListaNueva([n](NodoLista *lista) { return insComFin(lista, n); }, inputLista, expected); };
+    { checkListaNueva([n](NodoLista *lista)
+                      { return insComFin(lista, n); }, inputLista, expected); };
 
     SECTION("(1,2,1) x=0") { check("(1,2,1)", 0, "(0,1,2,1,0)"); }
     SECTION("(1,2,3,4) x=5") { check("(1,2,3,4)", 5, "(5,4,3,2,1,5)"); }
@@ -384,7 +378,8 @@ TEST_CASE("PruebaEliminarSecuencia cases", "[PruebaEliminarSecuencia][file:lista
 TEST_CASE("PruebaMoverNodo cases", "[PruebaMoverNodo][file:listas]")
 {
     auto check = [](const char *inputListaOriginal, unsigned int inicial, unsigned int final, const char *expected)
-    { checkListaModificada([inicial, final](NodoLista *&lista) { moverNodo(lista, inicial, final); }, inputListaOriginal, expected); };
+    { checkListaModificada([inicial, final](NodoLista *&lista)
+                           { moverNodo(lista, inicial, final); }, inputListaOriginal, expected); };
 
     SECTION("move 1->2") { check("(1,2,3,4,5,6,7,8,9,0)", 1, 2, "(2,1,3,4,5,6,7,8,9,0)"); }
     SECTION("move 1->5") { check("(1,2,3,4,5,6,7,8,9,0)", 1, 5, "(2,3,4,5,1,6,7,8,9,0)"); }

@@ -6,18 +6,7 @@
 
 #include "comienzo.hpp"
 #include "func_aux.hpp"
-
-static void checkLeak()
-{
-    auto leaked = FrameworkA1::hayLeak();
-    FrameworkA1::detenerMemTracking();
-    if (leaked)
-    {
-        std::ostringstream mensaje;
-        mensaje << "Se perdieron " << leaked << " bytes";
-        FAIL_CHECK(mensaje.str());
-    }
-}
+#include "mem_tracking_fixture.hpp"
 
 template <typename Funcion>
 void checkSalida(Funcion funcion, const std::string &expected)
@@ -30,7 +19,7 @@ void checkSalida(Funcion funcion, const std::string &expected)
     std::string resultado = salida.str();
     if (!resultado.empty() && resultado.back() == '\n')
         resultado.pop_back();
-    REQUIRE(resultado == expected);
+    CHECK(resultado == expected);
 }
 
 template <typename Funcion>
@@ -40,25 +29,26 @@ void checkVectorIntModificado(Funcion funcion, const char *input, const std::str
     int *vector = (int *)FrameworkA1::parsearColeccion(input, largo);
     int *esperado = (int *)FrameworkA1::parsearColeccion(expected.c_str(), largoEsperado);
 
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     funcion(vector, largo);
-    if (!FrameworkA1::sonIguales(vector, esperado, largoEsperado))
+    bool iguales = FrameworkA1::sonIguales(vector, esperado, largoEsperado);
+    if (!iguales)
     {
         char *got = FrameworkA1::serializar(vector, largo);
-        FrameworkA1::detenerMemTracking(false);
-        REQUIRE(got == expected);
+        INFO("Esperado: " << expected << " — Recibido: " << got);
+        delete[] got;
     }
-
+    CHECK(iguales);
     FrameworkA1::destruir(vector);
     FrameworkA1::destruir(esperado);
-    checkLeak();
 }
 
 TEST_CASE("PruebaSuma cases", "[PruebaSuma][file:comienzo]")
 {
     auto checkSuma = [](int a, int b, int expected)
     {
-        REQUIRE(suma(a, b) == expected);
+        CHECK(suma(a, b) == expected);
     };
     SECTION("2 + 7 = 9") { checkSuma(2, 7, 9); }
     SECTION("-8 + 6 = -2") { checkSuma(-8, 6, -2); }
@@ -106,8 +96,7 @@ TEST_CASE("PruebaOcurrencias123Repetidos cases", "[PruebaOcurrencias123Repetidos
         int largo;
         int *vec = (int *)FrameworkA1::parsearColeccion(vecStr, largo);
         int *copia = (int *)FrameworkA1::parsearColeccion(vecStr, largo);
-        int res = ocurrencias123Repetidos(vec, largo);
-        REQUIRE(res == expected);
+        CHECK(ocurrencias123Repetidos(vec, largo) == expected);
         if (!FrameworkA1::sonIguales(vec, copia, largo))
             FAIL_CHECK("La función modifica el parámetro de entrada");
         FrameworkA1::destruir(vec);
@@ -134,7 +123,7 @@ TEST_CASE("PruebaMaximoNumero cases", "[PruebaMaximoNumero][file:comienzo]")
         auto old = std::cin.rdbuf(iss.rdbuf());
         int res = maximoNumero(n);
         std::cin.rdbuf(old);
-        REQUIRE(res == expected);
+        CHECK(res == expected);
     };
 
     SECTION("3:2 4 8") { check(3, "2 4 8", 8); }
@@ -169,13 +158,18 @@ TEST_CASE("PruebaIntercalarVector cases", "[PruebaIntercalarVector][file:comienz
         int *v2 = (int *)FrameworkA1::parsearColeccion(v2s, l2);
         int lExp = 0;
         int *exp = (int *)FrameworkA1::parsearColeccion(expected.c_str(), lExp);
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
         int *res = intercalarVector(v1, v2, l1, l2);
         bool ok = FrameworkA1::sonIguales(res, exp, lExp);
         if (!ok)
         {
             char *got = FrameworkA1::serializar(res, l1 + l2);
-            REQUIRE(got == expected);
+            INFO("Esperado: " << expected << " — Recibido: " << got);
+            delete[] got;
         }
+        CHECK(ok);
+
         FrameworkA1::destruir(v1);
         FrameworkA1::destruir(v2);
         FrameworkA1::destruir(exp);
@@ -243,8 +237,11 @@ TEST_CASE("PruebaSubconjuntoVector cases", "[PruebaSubconjuntoVector][file:comie
         int l2 = 0;
         int *v2 = (int *)FrameworkA1::parsearColeccion(v2s, l2);
         int *v2c = (int *)FrameworkA1::parsearColeccion(v2s, l2);
-        bool res = subconjuntoVector(v1, v2, l1, l2);
-        REQUIRE(res == expected);
+
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+
+        CHECK(subconjuntoVector(v1, v2, l1, l2) == expected);
         if (!FrameworkA1::sonIguales(v1, v1c, l1) || !FrameworkA1::sonIguales(v2, v2c, l2))
             FAIL_CHECK("La función modifica los parámetros de entrada");
         FrameworkA1::destruir(v1);
@@ -269,14 +266,18 @@ TEST_CASE("PruebaInvertirCase cases", "[PruebaInvertirCase][file:comienzo]")
     auto check = [](const char *in, const char *expected)
     {
         char *copia = FrameworkA1::copioString(in);
+
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+
         char *res = invertirCase(copia);
         bool ok = FrameworkA1::sonIguales(res, expected);
         if (!ok)
         {
             std::ostringstream oss;
-            oss << "Expected: \"" << expected << "\" Received: \"" << res << "\"";
-            FAIL(oss.str());
+            INFO("Expected: \"" << expected << "\" Received: \"" << res << "\"");
         }
+        CHECK(ok);
         delete[] copia;
         if (res)
             delete[] res;
@@ -300,15 +301,14 @@ TEST_CASE("PruebaOcurrenciasSubstring cases", "[PruebaOcurrenciasSubstring][file
         char **copia = (char **)FrameworkA1::parsearColeccion(vecStr, largo);
         char *subc = FrameworkA1::copioString(substr);
         char *subc2 = FrameworkA1::copioString(substr);
+
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+
         unsigned int res = ocurrenciasSubstring(vec, largo, subc2);
-        if ((int)res != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << res;
-            FAIL(oss.str());
-        }
+        CHECK((int)res == expected);
         if (!FrameworkA1::sonIguales(vec, copia, largo) || strcmp(subc, subc2) != 0)
-            FAIL("Function modified input parameters");
+            FAIL_CHECK("La función modifica los parámetros de entrada");
         FrameworkA1::destruir(vec, largo);
         FrameworkA1::destruir(copia, largo);
         delete[] subc;
@@ -332,16 +332,19 @@ TEST_CASE("PruebaOrdenarVecStr cases", "[PruebaOrdenarVecStr][file:comienzo]")
         char **copia = (char **)FrameworkA1::parsearColeccion(vecStr, l);
         int le;
         char **exp = (char **)FrameworkA1::parsearColeccion(expectedStr, le);
+
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+
         char **res = ordenarVecStrings(vec, l);
         bool ok = FrameworkA1::sonIguales(res, exp, le);
         if (!ok)
         {
             char *got = FrameworkA1::serializar(res, l);
-            std::ostringstream oss;
-            oss << "Expected: " << expectedStr << " Received: " << got;
-            FAIL(oss.str());
+            INFO("Expected: " << expectedStr << " Received: " << got);
             delete[] got;
         }
+        CHECK(ok);
         FrameworkA1::destruir(vec, l);
         FrameworkA1::destruir(copia, l);
         FrameworkA1::destruir(exp, le);
@@ -372,11 +375,10 @@ TEST_CASE("PruebaSplitStr cases", "[PruebaSplitStr][file:comienzo]")
         if (!ok)
         {
             char *sGot = FrameworkA1::serializar(got, lo);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << sGot;
-            FAIL(oss.str());
+            INFO("Expected: " << expected << " Received: " << sGot);
             delete[] sGot;
         }
+        CHECK(ok);
         FrameworkA1::destruir(got, lo);
         FrameworkA1::destruir(exp, le);
         delete[] inCopy;
@@ -400,21 +402,7 @@ TEST_CASE("PruebaSplitStr cases", "[PruebaSplitStr][file:comienzo]")
 TEST_CASE("PruebaOrdenarVecIntMergeSort cases", "[PruebaOrdenarVecIntMergeSort][file:comienzo]")
 {
     auto check = [](const char *in, const char *expected)
-    {
-        int l;
-        int *vec = (int *)FrameworkA1::parsearColeccion(in, l);
-        int le;
-        int *exp = (int *)FrameworkA1::parsearColeccion(expected, le);
-        ordenarVecIntMergeSort(vec, l);
-        bool ok = FrameworkA1::sonIguales(vec, exp, le);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(vec, l);
-            REQUIRE(got == expected);
-        }
-        FrameworkA1::destruir(vec);
-        FrameworkA1::destruir(exp);
-    };
+    { checkVectorIntModificado(ordenarVecIntMergeSort, in, expected); };
 
     SECTION("[]") { check("[]", "[]"); }
     SECTION("[4]") { check("[4]", "[4]"); }

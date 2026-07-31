@@ -2,33 +2,18 @@
 #include "catch_amalgamated.hpp"
 #include "ejercicios/arboles.hpp"
 #include "func_aux.hpp"
-
-static void checkLeak()
-{
-    auto leaked = FrameworkA1::hayLeak();
-    FrameworkA1::detenerMemTracking();
-    if (leaked)
-    {
-        std::ostringstream mensaje;
-        mensaje << "Se perdieron " << leaked << " bytes";
-        FAIL_CHECK(mensaje.str());
-    }
-}
+#include "mem_tracking_fixture.hpp"
 
 template <typename Funcion, typename Esperado>
 void checkArbolABValor(Funcion funcion, const char *inputTree, Esperado expected)
 {
     int largo;
     NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     auto resultado = funcion(arbol);
-    if (resultado != expected)
-    {
-        FrameworkA1::detenerMemTracking(false);
-        REQUIRE(resultado == expected);
-    }
+    CHECK(resultado == expected);
     FrameworkA1::destruir(arbol);
-    checkLeak();
 }
 
 template <typename Funcion, typename Esperado>
@@ -36,15 +21,11 @@ void checkArbolAGValor(Funcion funcion, const char *inputTree, Esperado expected
 {
     int largo;
     NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     auto resultado = funcion(arbol);
-    if (resultado != expected)
-    {
-        FrameworkA1::detenerMemTracking(false);
-        REQUIRE(resultado == expected);
-    }
+    CHECK(resultado == expected);
     FrameworkA1::destruir(arbol);
-    checkLeak();
 }
 
 template <typename Funcion>
@@ -53,18 +34,21 @@ void checkArbolABLista(Funcion funcion, const char *inputTree, const char *expec
     int largo, largoSolucion;
     NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     NodoLista *resultado = funcion(arbol);
-    if (!FrameworkA1::sonIgualesDatosForma(resultado, solucion))
+    auto iguales = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+
+    if (!iguales)
     {
-        FrameworkA1::detenerMemTracking(false);
         char *got = FrameworkA1::serializar(resultado);
-        REQUIRE(got == expected);
+        INFO("Esperado: " << expected << " — Recibido: " << got);
+        delete[] got;
     }
+    CHECK(iguales);
     FrameworkA1::destruir(arbol);
     FrameworkA1::destruir(resultado);
     FrameworkA1::destruir(solucion);
-    checkLeak();
 }
 
 template <typename Funcion>
@@ -73,18 +57,21 @@ void checkArbolAGLista(Funcion funcion, const char *inputTree, const char *expec
     int largo, largoSolucion;
     NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-    FrameworkA1::comenzarMemTracking();
+    MemTrackingFixture memTracking;
+    memTracking.comenzarTracking();
     NodoLista *resultado = funcion(arbol);
-    if (!FrameworkA1::sonIgualesDatosForma(resultado, solucion))
+    auto iguales = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+
+    if (!iguales)
     {
-        FrameworkA1::detenerMemTracking(false);
         char *got = FrameworkA1::serializar(resultado);
-        REQUIRE(got == expected);
+        INFO("Esperado: " << expected << " — Recibido: " << got);
+        delete[] got;
     }
+    CHECK(iguales);
     FrameworkA1::destruir(arbol);
     FrameworkA1::destruir(resultado);
     FrameworkA1::destruir(solucion);
-    checkLeak();
 }
 
 TEST_CASE("PruebaAltura cases", "[PruebaAltura][file:arboles]")
@@ -111,7 +98,9 @@ TEST_CASE("PruebaSonIguales cases", "[PruebaSonIguales][file:arboles]")
         int largoA, largoB;
         NodoAB *a = (NodoAB *)FrameworkA1::parsearColeccion(inputA, largoA);
         NodoAB *b = (NodoAB *)FrameworkA1::parsearColeccion(inputB, largoB);
-        REQUIRE(sonIguales(a, b) == expected);
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(sonIguales(a, b) == expected);
         FrameworkA1::destruir(a);
         FrameworkA1::destruir(b);
     };
@@ -231,18 +220,19 @@ TEST_CASE("PruebaInvertirHastak cases", "[PruebaInvertirHastak][file:arboles]")
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        NodoAB *resultado = invertirHastak(arbol, k);
         int largoSolucion;
         NodoAB *solucion = (NodoAB *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-        bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
-        if (!ok)
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        NodoAB *resultado = invertirHastak(arbol, k);
+        bool iguales = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
+        if (!iguales)
         {
             char *got = FrameworkA1::serializar(resultado);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
+            INFO("Esperado: " << expected << " — Recibido: " << got);
             delete[] got;
-            FAIL(oss.str());
         }
+        CHECK(iguales);
         FrameworkA1::destruir(arbol);
         FrameworkA1::destruir(resultado);
         FrameworkA1::destruir(solucion);
@@ -268,19 +258,21 @@ TEST_CASE("PruebaBorrarNodoRaiz cases", "[PruebaBorrarNodoRaiz][file:arboles]")
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
         NodoAB *solucion = (NodoAB *)FrameworkA1::parsearColeccion(expected, largo);
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
         borrarNodoRaiz(arbol);
-        bool ok = FrameworkA1::sonIgualesDatos(solucion, arbol);
+        bool iguales = FrameworkA1::sonIgualesDatos(solucion, arbol);
         bool esAbb = FrameworkA1::esABB(arbol);
-        if (!ok)
+        if (!iguales)
         {
             char *got = FrameworkA1::serializar(arbol);
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << got;
+            INFO("Esperado: " << expected << " — Recibido: " << got);
             delete[] got;
-            FAIL(oss.str());
         }
+        CHECK(iguales);
         if (!esAbb)
-            FAIL("Result is not an ABB");
+            INFO("El resultado no es un ABB");
+        CHECK(esAbb);
         FrameworkA1::destruir(arbol);
         FrameworkA1::destruir(solucion);
     };
@@ -303,13 +295,9 @@ TEST_CASE("PruebaSumaABB cases", "[PruebaSumaABB][file:arboles]")
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        bool resultado = sumaABB(arbol, n);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(sumaABB(arbol, n) == expected);
         FrameworkA1::destruir(arbol);
     };
 
@@ -337,15 +325,12 @@ TEST_CASE("PruebaSucesorABB cases", "[PruebaSucesorABB][file:arboles]")
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
         NodoAB *copiaArbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        int resultado = sucesor(arbol, n);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(sucesor(arbol, n) == expected);
+
         if (!FrameworkA1::sonIgualesDatosForma(arbol, copiaArbol))
-            FAIL("Function modified input parameters");
+            FAIL_CHECK("La función modifica el parámetro de entrada");
         FrameworkA1::destruir(arbol);
         FrameworkA1::destruir(copiaArbol);
     };
@@ -371,13 +356,9 @@ TEST_CASE("PruebaNivelMasNodos cases", "[PruebaNivelMasNodos][file:arboles]")
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        int resultado = nivelMasNodos(arbol, nivelHasta);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(nivelMasNodos(arbol, nivelHasta) == expected);
         FrameworkA1::destruir(arbol);
     };
 
@@ -401,13 +382,9 @@ TEST_CASE("PruebaAlturaAG cases", "[PruebaAlturaAG][file:arboles]")
     {
         int largo;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-        int resultado = alturaAG(arbol);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(alturaAG(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
 
@@ -428,13 +405,9 @@ TEST_CASE("PruebaSumaPorNiveles cases", "[PruebaSumaPorNiveles][file:arboles]")
     {
         int largo;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-        int resultado = sumaPorNiveles(arbol);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(sumaPorNiveles(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
 
@@ -458,13 +431,9 @@ TEST_CASE("PruebaEsPrefijo cases", "[PruebaEsPrefijo][file:arboles]")
         int largoTree, largoList;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largoTree);
         NodoLista *camino = (NodoLista *)FrameworkA1::parsearColeccion(inputList, largoList);
-        bool resultado = esPrefijo(arbol, camino);
-        if (resultado != expected)
-        {
-            std::ostringstream oss;
-            oss << "Expected: " << expected << " Received: " << resultado;
-            FAIL(oss.str());
-        }
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(esPrefijo(arbol, camino) == expected);
         FrameworkA1::destruir(arbol);
         FrameworkA1::destruir(camino);
     };
@@ -516,7 +485,9 @@ TEST_CASE("PruebaNivelConMasNodosAG cases", "[PruebaNivelConMasNodosAG][file:arb
     {
         int largo;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-        REQUIRE(nivelConMasNodosAG(arbol) == expected);
+        MemTrackingFixture memTracking;
+        memTracking.comenzarTracking();
+        CHECK(nivelConMasNodosAG(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
 
