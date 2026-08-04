@@ -9,8 +9,6 @@ void checkArbolABValor(Funcion funcion, const char *inputTree, Esperado expected
 {
     int largo;
     NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-    MemTrackingFixture memTracking;
-    memTracking.comenzarTracking();
     auto resultado = funcion(arbol);
     CHECK(resultado == expected);
     FrameworkA1::destruir(arbol);
@@ -21,8 +19,6 @@ void checkArbolAGValor(Funcion funcion, const char *inputTree, Esperado expected
 {
     int largo;
     NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-    MemTrackingFixture memTracking;
-    memTracking.comenzarTracking();
     auto resultado = funcion(arbol);
     CHECK(resultado == expected);
     FrameworkA1::destruir(arbol);
@@ -34,18 +30,17 @@ void checkArbolABLista(Funcion funcion, const char *inputTree, const char *expec
     int largo, largoSolucion;
     NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-    MemTrackingFixture memTracking;
-    memTracking.comenzarTracking();
     NodoLista *resultado = funcion(arbol);
     auto iguales = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
 
     if (!iguales)
     {
         char *got = FrameworkA1::serializar(resultado);
-        INFO("Esperado: " << expected << " — Recibido: " << got);
+        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
         delete[] got;
     }
-    CHECK(iguales);
+    else
+        CHECK(true);
     FrameworkA1::destruir(arbol);
     FrameworkA1::destruir(resultado);
     FrameworkA1::destruir(solucion);
@@ -57,22 +52,157 @@ void checkArbolAGLista(Funcion funcion, const char *inputTree, const char *expec
     int largo, largoSolucion;
     NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
     NodoLista *solucion = (NodoLista *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-    MemTrackingFixture memTracking;
-    memTracking.comenzarTracking();
     NodoLista *resultado = funcion(arbol);
     auto iguales = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
 
     if (!iguales)
     {
         char *got = FrameworkA1::serializar(resultado);
-        INFO("Esperado: " << expected << " — Recibido: " << got);
+        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
         delete[] got;
     }
-    CHECK(iguales);
+    else
+        CHECK(true);
     FrameworkA1::destruir(arbol);
     FrameworkA1::destruir(resultado);
     FrameworkA1::destruir(solucion);
 }
+
+template <typename Funcion>
+void checkMemoriaArbolAB(Funcion funcion, const char *inputTree)
+{
+    int largo;
+    NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
+    checkMemoriaEjecucion([&] { funcion(arbol); });
+    FrameworkA1::destruir(arbol);
+}
+
+template <typename Funcion>
+void checkMemoriaArbolAG(Funcion funcion, const char *inputTree)
+{
+    int largo;
+    NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
+    checkMemoriaEjecucion([&] { funcion(arbol); });
+    FrameworkA1::destruir(arbol);
+}
+
+template <typename Funcion>
+void checkMemoriaArbolABLista(Funcion funcion, const char *inputTree)
+{
+    checkMemoriaArbolAB([&](NodoAB *arbol)
+    {
+        NodoLista *resultado = funcion(arbol);
+        FrameworkA1::destruir(resultado);
+    }, inputTree);
+}
+
+template <typename Funcion>
+void checkMemoriaArbolAGLista(Funcion funcion, const char *inputTree)
+{
+    checkMemoriaArbolAG([&](NodoAG *arbol)
+    {
+        NodoLista *resultado = funcion(arbol);
+        FrameworkA1::destruir(resultado);
+    }, inputTree);
+}
+
+#define MEMORY_CASES_AB(nombre, funcion) \
+    TEST_CASE(nombre " memory cases", "[" nombre "][memory][file:arboles]") \
+    { \
+        SECTION("empty") { checkMemoriaArbolAB(funcion, "{}"); } \
+        SECTION("single") { checkMemoriaArbolAB(funcion, "{1}"); } \
+        SECTION("several") { checkMemoriaArbolAB(funcion, "{1,2,3,4,5}"); } \
+    }
+
+#define MEMORY_CASES_AG(nombre, funcion) \
+    TEST_CASE(nombre " memory cases", "[" nombre "][memory][file:arboles]") \
+    { \
+        SECTION("empty") { checkMemoriaArbolAG(funcion, "{{}}"); } \
+        SECTION("single") { checkMemoriaArbolAG(funcion, "{{1}}"); } \
+        SECTION("several") { checkMemoriaArbolAG(funcion, "{{1,2,3,#,4}}"); } \
+    }
+
+MEMORY_CASES_AB("PruebaAltura", [](NodoAB *arbol) { (void)altura(arbol); })
+MEMORY_CASES_AB("PruebaExisteCaminoConSuma", [](NodoAB *arbol) { (void)existeCaminoConSuma(arbol, 4); })
+MEMORY_CASES_AB("PruebaEsArbolBalanceado", [](NodoAB *arbol) { (void)esArbolBalanceado(arbol); })
+MEMORY_CASES_AB("PruebaCantNodosEntreNiveles", [](NodoAB *arbol) { (void)cantNodosEntreNiveles(arbol, 1, 3); })
+MEMORY_CASES_AB("PruebaSumaABB", [](NodoAB *arbol) { (void)sumaABB(arbol, 4); })
+MEMORY_CASES_AB("PruebaSucesorABB", [](NodoAB *arbol) { (void)sucesor(arbol, 1); })
+MEMORY_CASES_AB("PruebaNivelMasNodos", [](NodoAB *arbol) { (void)nivelMasNodos(arbol, 3); })
+
+MEMORY_CASES_AG("PruebaAlturaAG", [](NodoAG *arbol) { (void)alturaAG(arbol); })
+MEMORY_CASES_AG("PruebaSumaPorNiveles", [](NodoAG *arbol) { (void)sumaPorNiveles(arbol); })
+MEMORY_CASES_AG("PruebaNivelConMasNodosAG", [](NodoAG *arbol) { (void)nivelConMasNodosAG(arbol); })
+
+TEST_CASE("PruebaSonIguales memory cases", "[PruebaSonIguales][memory][file:arboles]")
+{
+    auto check = [](const char *inputA, const char *inputB)
+    {
+        int largoA, largoB;
+        NodoAB *a = (NodoAB *)FrameworkA1::parsearColeccion(inputA, largoA);
+        NodoAB *b = (NodoAB *)FrameworkA1::parsearColeccion(inputB, largoB);
+        checkMemoriaEjecucion([&] { (void)sonIguales(a, b); });
+        FrameworkA1::destruir(a);
+        FrameworkA1::destruir(b);
+    };
+    SECTION("empty") { check("{}", "{}"); }
+    SECTION("equal") { check("{1,2,3}", "{1,2,3}"); }
+    SECTION("different") { check("{1,2,3}", "{1,3,2}"); }
+}
+
+TEST_CASE("PruebaEnNivel memory cases", "[PruebaEnNivel][memory][file:arboles]")
+{
+    SECTION("empty") { checkMemoriaArbolABLista([](NodoAB *a) { return enNivel(a, 1); }, "{}"); }
+    SECTION("root") { checkMemoriaArbolABLista([](NodoAB *a) { return enNivel(a, 1); }, "{1,2,3}"); }
+    SECTION("deep") { checkMemoriaArbolABLista([](NodoAB *a) { return enNivel(a, 3); }, "{1,2,3,4,5,6,7}"); }
+}
+
+TEST_CASE("PruebaCamino memory cases", "[PruebaCamino][memory][file:arboles]")
+{
+    SECTION("empty") { checkMemoriaArbolABLista([](NodoAB *a) { return camino(a, 1); }, "{}"); }
+    SECTION("root") { checkMemoriaArbolABLista([](NodoAB *a) { return camino(a, 1); }, "{1}"); }
+    SECTION("deep") { checkMemoriaArbolABLista([](NodoAB *a) { return camino(a, 5); }, "{1,2,3,4,5}"); }
+}
+
+TEST_CASE("PruebaInvertirHastak memory cases", "[PruebaInvertirHastak][memory][file:arboles]")
+{
+    auto check = [](const char *input, int k)
+    { checkMemoriaArbolAB([=](NodoAB *a) { NodoAB *resultado = invertirHastak(a, k); FrameworkA1::destruir(resultado); }, input); };
+    SECTION("empty") { check("{}", 3); }
+    SECTION("zero") { check("{1,2,3}", 0); }
+    SECTION("several levels") { check("{1,2,3,4,5,6,7}", 3); }
+}
+
+TEST_CASE("PruebaBorrarNodoRaiz memory cases", "[PruebaBorrarNodoRaiz][memory][file:arboles]")
+{
+    SECTION("leaf") { checkMemoriaArbolAB([](NodoAB *&a) { borrarNodoRaiz(a); }, "{1}"); }
+    SECTION("one child") { checkMemoriaArbolAB([](NodoAB *&a) { borrarNodoRaiz(a); }, "{1,#,2}"); }
+    SECTION("two children") { checkMemoriaArbolAB([](NodoAB *&a) { borrarNodoRaiz(a); }, "{3,2,6}"); }
+}
+
+TEST_CASE("PruebaEsPrefijo memory cases", "[PruebaEsPrefijo][memory][file:arboles]")
+{
+    auto check = [](const char *inputTree, const char *inputList)
+    {
+        int largoLista;
+        NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputList, largoLista);
+        checkMemoriaArbolAG([&](NodoAG *a) { (void)esPrefijo(a, lista); }, inputTree);
+        FrameworkA1::destruir(lista);
+    };
+    SECTION("empty path") { check("{{1}}", "()"); }
+    SECTION("prefix") { check("{{1,2,3,#,4}}", "(1,2,4)"); }
+    SECTION("not prefix") { check("{{1,2,3,#,4}}", "(1,4)"); }
+}
+
+TEST_CASE("PruebaCaminoAG memory cases", "[PruebaCaminoAG][memory][file:arboles]")
+{
+    SECTION("empty") { checkMemoriaArbolAGLista([](NodoAG *a) { return caminoAG(a, 1); }, "{{}}"); }
+    SECTION("root") { checkMemoriaArbolAGLista([](NodoAG *a) { return caminoAG(a, 1); }, "{{1}}"); }
+    SECTION("deep") { checkMemoriaArbolAGLista([](NodoAG *a) { return caminoAG(a, 4); }, "{{1,2,3,#,4}}"); }
+}
+
+#undef MEMORY_CASES_AB
+#undef MEMORY_CASES_AG
 
 TEST_CASE("PruebaAltura cases", "[PruebaAltura][file:arboles]")
 {
@@ -98,8 +228,6 @@ TEST_CASE("PruebaSonIguales cases", "[PruebaSonIguales][file:arboles]")
         int largoA, largoB;
         NodoAB *a = (NodoAB *)FrameworkA1::parsearColeccion(inputA, largoA);
         NodoAB *b = (NodoAB *)FrameworkA1::parsearColeccion(inputB, largoB);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(sonIguales(a, b) == expected);
         FrameworkA1::destruir(a);
         FrameworkA1::destruir(b);
@@ -222,17 +350,16 @@ TEST_CASE("PruebaInvertirHastak cases", "[PruebaInvertirHastak][file:arboles]")
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
         int largoSolucion;
         NodoAB *solucion = (NodoAB *)FrameworkA1::parsearColeccion(expected, largoSolucion);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         NodoAB *resultado = invertirHastak(arbol, k);
         bool iguales = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
         if (!iguales)
         {
             char *got = FrameworkA1::serializar(resultado);
-            INFO("Esperado: " << expected << " — Recibido: " << got);
+            FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
             delete[] got;
         }
-        CHECK(iguales);
+        else
+            CHECK(true);
         FrameworkA1::destruir(arbol);
         FrameworkA1::destruir(resultado);
         FrameworkA1::destruir(solucion);
@@ -258,21 +385,21 @@ TEST_CASE("PruebaBorrarNodoRaiz cases", "[PruebaBorrarNodoRaiz][file:arboles]")
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
         NodoAB *solucion = (NodoAB *)FrameworkA1::parsearColeccion(expected, largo);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         borrarNodoRaiz(arbol);
         bool iguales = FrameworkA1::sonIgualesDatos(solucion, arbol);
         bool esAbb = FrameworkA1::esABB(arbol);
         if (!iguales)
         {
             char *got = FrameworkA1::serializar(arbol);
-            INFO("Esperado: " << expected << " — Recibido: " << got);
+            FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
             delete[] got;
         }
-        CHECK(iguales);
+        else
+            CHECK(true);
         if (!esAbb)
-            INFO("El resultado no es un ABB");
-        CHECK(esAbb);
+            FAIL_CHECK("El resultado no es un ABB");
+        else
+            CHECK(true);
         FrameworkA1::destruir(arbol);
         FrameworkA1::destruir(solucion);
     };
@@ -295,8 +422,6 @@ TEST_CASE("PruebaSumaABB cases", "[PruebaSumaABB][file:arboles]")
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(sumaABB(arbol, n) == expected);
         FrameworkA1::destruir(arbol);
     };
@@ -325,8 +450,6 @@ TEST_CASE("PruebaSucesorABB cases", "[PruebaSucesorABB][file:arboles]")
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
         NodoAB *copiaArbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(sucesor(arbol, n) == expected);
 
         if (!FrameworkA1::sonIgualesDatosForma(arbol, copiaArbol))
@@ -356,8 +479,6 @@ TEST_CASE("PruebaNivelMasNodos cases", "[PruebaNivelMasNodos][file:arboles]")
     {
         int largo;
         NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(nivelMasNodos(arbol, nivelHasta) == expected);
         FrameworkA1::destruir(arbol);
     };
@@ -382,8 +503,6 @@ TEST_CASE("PruebaAlturaAG cases", "[PruebaAlturaAG][file:arboles]")
     {
         int largo;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(alturaAG(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
@@ -405,8 +524,6 @@ TEST_CASE("PruebaSumaPorNiveles cases", "[PruebaSumaPorNiveles][file:arboles]")
     {
         int largo;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(sumaPorNiveles(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };
@@ -431,8 +548,6 @@ TEST_CASE("PruebaEsPrefijo cases", "[PruebaEsPrefijo][file:arboles]")
         int largoTree, largoList;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largoTree);
         NodoLista *camino = (NodoLista *)FrameworkA1::parsearColeccion(inputList, largoList);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(esPrefijo(arbol, camino) == expected);
         FrameworkA1::destruir(arbol);
         FrameworkA1::destruir(camino);
@@ -485,8 +600,6 @@ TEST_CASE("PruebaNivelConMasNodosAG cases", "[PruebaNivelConMasNodosAG][file:arb
     {
         int largo;
         NodoAG *arbol = (NodoAG *)FrameworkA1::parsearColeccion(inputTree, largo);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         CHECK(nivelConMasNodosAG(arbol) == expected);
         FrameworkA1::destruir(arbol);
     };

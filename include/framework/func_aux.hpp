@@ -256,22 +256,4 @@ namespace FrameworkA1
 	*/
 	FRAMEWORKA1DLL_API char *serializar(char **vecStr, int largo);
 
-	/*
-	PRE:
-	POS: comienza a trackear uso de memoria
-	*/
-	FRAMEWORKA1DLL_API void comenzarMemTracking();
-
-	/*
-	PRE:
-	POS: deja de trackear uso de memoria. Limpia o no la memoria (default true).
-	*/
-	FRAMEWORKA1DLL_API void detenerMemTracking(bool limpiar = true);
-
-	/*
-	PRE:
-	POS: devuelve la cantidad de bytes leakeados
-	*/
-	FRAMEWORKA1DLL_API int hayLeak();
-
 };
