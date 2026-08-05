@@ -1475,26 +1475,3 @@ char *FrameworkA1::serializar(char **vecStr, int largo)
 	}
 	return str;
 }
-
-void FrameworkA1::comenzarMemTracking()
-{
-	// Por las dudas, nos aseguramos de empezar de 0
-	MemPlumber::stopAndFreeAllMemory();
-	MemPlumber::start(false);
-}
-
-void FrameworkA1::detenerMemTracking(bool limpiar)
-{
-	if (limpiar)
-		MemPlumber::stopAndFreeAllMemory();
-	else
-		MemPlumber::stop();
-}
-
-int FrameworkA1::hayLeak()
-{
-	size_t leakCount = 0;
-	uint64_t leakSize = 0;
-	MemPlumber::memLeakCheck(leakCount, leakSize, false);
-	return static_cast<int>(leakSize);
-}

@@ -29,19 +29,119 @@ void checkVectorIntModificado(Funcion funcion, const char *input, const std::str
     int *vector = (int *)FrameworkA1::parsearColeccion(input, largo);
     int *esperado = (int *)FrameworkA1::parsearColeccion(expected.c_str(), largoEsperado);
 
-    MemTrackingFixture memTracking;
-    memTracking.comenzarTracking();
     funcion(vector, largo);
     bool iguales = FrameworkA1::sonIguales(vector, esperado, largoEsperado);
     if (!iguales)
     {
         char *got = FrameworkA1::serializar(vector, largo);
-        INFO("Esperado: " << expected << " — Recibido: " << got);
+        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
         delete[] got;
     }
-    CHECK(iguales);
+    else
+        CHECK(true);
     FrameworkA1::destruir(vector);
     FrameworkA1::destruir(esperado);
+}
+
+TEST_CASE("PruebaOrdenarVecInt memory cases", "[PruebaOrdenarVecInt][memory][file:comienzo]")
+{
+    auto check = [](const char *input)
+    {
+        int largo;
+        int *vector = (int *)FrameworkA1::parsearColeccion(input, largo);
+        checkMemoriaEjecucion([&] { ordenarVecInt(vector, largo); });
+        FrameworkA1::destruir(vector);
+    };
+    SECTION("empty") { check("[]"); }
+    SECTION("unsorted") { check("[9,5,1]"); }
+    SECTION("duplicates") { check("[1,6,4,9,2,4,9,1]"); }
+}
+
+TEST_CASE("PruebaIntercalarVector memory cases", "[PruebaIntercalarVector][memory][file:comienzo]")
+{
+    auto check = [](const char *input1, const char *input2)
+    {
+        int largo1, largo2;
+        int *vector1 = (int *)FrameworkA1::parsearColeccion(input1, largo1);
+        int *vector2 = (int *)FrameworkA1::parsearColeccion(input2, largo2);
+        checkMemoriaEjecucion([&]
+        {
+            int *resultado = intercalarVector(vector1, vector2, largo1, largo2);
+            FrameworkA1::destruir(resultado);
+        });
+        FrameworkA1::destruir(vector1);
+        FrameworkA1::destruir(vector2);
+    };
+    SECTION("both empty") { check("[]", "[]"); }
+    SECTION("one empty") { check("[1,2,3]", "[]"); }
+    SECTION("interleaved") { check("[1,3,5]", "[2,4]"); }
+}
+
+TEST_CASE("PruebaSubconjuntoVector memory cases", "[PruebaSubconjuntoVector][memory][file:comienzo]")
+{
+    auto check = [](const char *input1, const char *input2)
+    {
+        int largo1, largo2;
+        int *vector1 = (int *)FrameworkA1::parsearColeccion(input1, largo1);
+        int *vector2 = (int *)FrameworkA1::parsearColeccion(input2, largo2);
+        checkMemoriaEjecucion([&] { (void)subconjuntoVector(vector1, vector2, largo1, largo2); });
+        FrameworkA1::destruir(vector1);
+        FrameworkA1::destruir(vector2);
+    };
+    SECTION("both empty") { check("[]", "[]"); }
+    SECTION("subset") { check("[1,2,3]", "[1,2,3,4]"); }
+    SECTION("not subset") { check("[1,5]", "[1,2,3]"); }
+}
+
+TEST_CASE("PruebaInvertirCase memory cases", "[PruebaInvertirCase][memory][file:comienzo]")
+{
+    auto check = [](const char *input)
+    {
+        char *copia = FrameworkA1::copioString(input);
+        checkMemoriaEjecucion([&]
+        {
+            char *resultado = invertirCase(copia);
+            delete[] resultado;
+        });
+        delete[] copia;
+    };
+    SECTION("empty") { check(""); }
+    SECTION("lowercase") { check("hola"); }
+    SECTION("mixed") { check("Write in C"); }
+}
+
+TEST_CASE("PruebaOcurrenciasSubstring memory cases", "[PruebaOcurrenciasSubstring][memory][file:comienzo]")
+{
+    auto check = [](const char *input, const char *substring)
+    {
+        int largo;
+        char **vector = (char **)FrameworkA1::parsearColeccion(input, largo);
+        char *sub = FrameworkA1::copioString(substring);
+        checkMemoriaEjecucion([&] { (void)ocurrenciasSubstring(vector, largo, sub); });
+        FrameworkA1::destruir(vector, largo);
+        delete[] sub;
+    };
+    SECTION("empty") { check("[]", "a"); }
+    SECTION("one match") { check("['hola']", "hola"); }
+    SECTION("several") { check("['abc','ab','ab']", "ab"); }
+}
+
+TEST_CASE("PruebaOrdenarVecStr memory cases", "[PruebaOrdenarVecStr][memory][file:comienzo]")
+{
+    auto check = [](const char *input)
+    {
+        int largo;
+        char **vector = (char **)FrameworkA1::parsearColeccion(input, largo);
+        checkMemoriaEjecucion([&]
+        {
+            char **resultado = ordenarVecStrings(vector, largo);
+            FrameworkA1::destruir(resultado, largo);
+        });
+        FrameworkA1::destruir(vector, largo);
+    };
+    SECTION("empty") { check("[]"); }
+    SECTION("single") { check("['hola']"); }
+    SECTION("unsorted") { check("['paso','pasa','pasado','pasaron']"); }
 }
 
 TEST_CASE("PruebaSuma cases", "[PruebaSuma][file:comienzo]")
@@ -158,17 +258,16 @@ TEST_CASE("PruebaIntercalarVector cases", "[PruebaIntercalarVector][file:comienz
         int *v2 = (int *)FrameworkA1::parsearColeccion(v2s, l2);
         int lExp = 0;
         int *exp = (int *)FrameworkA1::parsearColeccion(expected.c_str(), lExp);
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
         int *res = intercalarVector(v1, v2, l1, l2);
         bool ok = FrameworkA1::sonIguales(res, exp, lExp);
         if (!ok)
         {
             char *got = FrameworkA1::serializar(res, l1 + l2);
-            INFO("Esperado: " << expected << " — Recibido: " << got);
+            FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
             delete[] got;
         }
-        CHECK(ok);
+        else
+            CHECK(true);
 
         FrameworkA1::destruir(v1);
         FrameworkA1::destruir(v2);
@@ -238,9 +337,6 @@ TEST_CASE("PruebaSubconjuntoVector cases", "[PruebaSubconjuntoVector][file:comie
         int *v2 = (int *)FrameworkA1::parsearColeccion(v2s, l2);
         int *v2c = (int *)FrameworkA1::parsearColeccion(v2s, l2);
 
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
-
         CHECK(subconjuntoVector(v1, v2, l1, l2) == expected);
         if (!FrameworkA1::sonIguales(v1, v1c, l1) || !FrameworkA1::sonIguales(v2, v2c, l2))
             FAIL_CHECK("La función modifica los parámetros de entrada");
@@ -267,17 +363,15 @@ TEST_CASE("PruebaInvertirCase cases", "[PruebaInvertirCase][file:comienzo]")
     {
         char *copia = FrameworkA1::copioString(in);
 
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
-
         char *res = invertirCase(copia);
         bool ok = FrameworkA1::sonIguales(res, expected);
         if (!ok)
         {
             std::ostringstream oss;
-            INFO("Expected: \"" << expected << "\" Received: \"" << res << "\"");
+            FAIL_CHECK("Expected: \"" << expected << "\" Received: \"" << res << "\"");
         }
-        CHECK(ok);
+        else
+            CHECK(true);
         delete[] copia;
         if (res)
             delete[] res;
@@ -301,9 +395,6 @@ TEST_CASE("PruebaOcurrenciasSubstring cases", "[PruebaOcurrenciasSubstring][file
         char **copia = (char **)FrameworkA1::parsearColeccion(vecStr, largo);
         char *subc = FrameworkA1::copioString(substr);
         char *subc2 = FrameworkA1::copioString(substr);
-
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
 
         unsigned int res = ocurrenciasSubstring(vec, largo, subc2);
         CHECK((int)res == expected);
@@ -333,18 +424,16 @@ TEST_CASE("PruebaOrdenarVecStr cases", "[PruebaOrdenarVecStr][file:comienzo]")
         int le;
         char **exp = (char **)FrameworkA1::parsearColeccion(expectedStr, le);
 
-        MemTrackingFixture memTracking;
-        memTracking.comenzarTracking();
-
         char **res = ordenarVecStrings(vec, l);
         bool ok = FrameworkA1::sonIguales(res, exp, le);
         if (!ok)
         {
             char *got = FrameworkA1::serializar(res, l);
-            INFO("Expected: " << expectedStr << " Received: " << got);
+            FAIL_CHECK("Expected: " << expectedStr << " Received: " << got);
             delete[] got;
         }
-        CHECK(ok);
+        else
+            CHECK(true);
         FrameworkA1::destruir(vec, l);
         FrameworkA1::destruir(copia, l);
         FrameworkA1::destruir(exp, le);
@@ -375,10 +464,11 @@ TEST_CASE("PruebaSplitStr cases", "[PruebaSplitStr][file:comienzo]")
         if (!ok)
         {
             char *sGot = FrameworkA1::serializar(got, lo);
-            INFO("Expected: " << expected << " Received: " << sGot);
+            FAIL_CHECK("Expected: " << expected << " Received: " << sGot);
             delete[] sGot;
         }
-        CHECK(ok);
+        else
+            CHECK(true);
         FrameworkA1::destruir(got, lo);
         FrameworkA1::destruir(exp, le);
         delete[] inCopy;

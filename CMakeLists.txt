@@ -11,7 +11,6 @@ add_executable(obligatorio1
     
     src/ejercicios/arboles.cpp
     src/ejercicios/listas.cpp
-    src/ejercicios/defensa.cpp
     src/ejercicios/comienzo.cpp
 
     src/framework/cola_array.cpp
