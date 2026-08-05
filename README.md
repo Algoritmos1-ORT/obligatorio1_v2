@@ -100,3 +100,10 @@ Por defecto se usa el reporte de consola. Para una salida compacta, agregar la o
 ```bash
 ./build/obligatorio1 --reporter compact
 ```
+
+Para obtener únicamente el porcentaje de casos de prueba aprobados, usar el
+reporte `grading`:
+
+```bash
+./build/obligatorio1 "[file:listas]" --reporter grading
+```
