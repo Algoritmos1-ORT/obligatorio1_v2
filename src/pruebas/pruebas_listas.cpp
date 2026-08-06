@@ -4,6 +4,18 @@
 #include "func_aux.hpp"
 #include "mem_tracking_fixture.hpp"
 
+void checkListasIguales(NodoLista *resultado, NodoLista *esperado, const char *esperadoTexto)
+{
+    if (!FrameworkA1::sonIgualesDatosForma(resultado, esperado))
+    {
+        char *got = FrameworkA1::serializar(resultado);
+        FAIL_CHECK("Esperado: " << esperadoTexto << " — Recibido: " << got);
+        delete[] got;
+    }
+    else
+        CHECK(true);
+}
+
 template <typename Funcion>
 void checkListaNueva(Funcion funcion, const char *inputLista, const char *expected)
 {
@@ -16,18 +28,10 @@ void checkListaNueva(Funcion funcion, const char *inputLista, const char *expect
 
     NodoLista *resultado = funcion(lista);
 
-    bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
     bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista, copiaLista);
     bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista);
 
-    if (!ok)
-    {
-        char *got = FrameworkA1::serializar(resultado);
-        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-        CHECK(true);
+    checkListasIguales(resultado, solucion, expected);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(copiaLista);
@@ -51,15 +55,7 @@ void checkListaModificada(Funcion funcion, const char *inputLista, const char *e
 
     funcion(lista);
 
-    bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
-    if (!ok)
-    {
-        char *got = FrameworkA1::serializar(lista);
-        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-        CHECK(true);
+    checkListasIguales(lista, solucion, expected);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(solucion);
@@ -77,20 +73,10 @@ void checkDosListasNuevas(Funcion funcion, const char *inputLista1, const char *
 
     NodoLista *resultado = funcion(lista1, lista2);
 
-    bool ok = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
     bool parametrosNoModificados = FrameworkA1::sonIgualesDatosForma(lista1, copiaLista1) && FrameworkA1::sonIgualesDatosForma(lista2, copiaLista2);
     bool noComparteMemoria = !FrameworkA1::compartenMemoria(resultado, lista1) && !FrameworkA1::compartenMemoria(resultado, lista2);
 
-    if (!ok)
-    {
-        char *got = FrameworkA1::serializar(resultado);
-        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-    {
-        CHECK(true);
-    }
+    checkListasIguales(resultado, solucion, expected);
 
     FrameworkA1::destruir(lista1);
     FrameworkA1::destruir(lista2);
@@ -149,16 +135,8 @@ void checkListaConSecuenciaModificada(Funcion funcion, const char *inputLista, c
 
     funcion(lista, secuencia);
 
-    bool ok = FrameworkA1::sonIgualesDatosForma(lista, solucion);
     bool secuenciaNoModificada = FrameworkA1::sonIgualesDatosForma(secuencia, copiaSecuencia);
-    if (!ok)
-    {
-        char *got = FrameworkA1::serializar(lista);
-        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-        CHECK(true);
+    checkListasIguales(lista, solucion, expected);
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(secuencia);
@@ -206,6 +184,57 @@ void checkMemoriaListaConSecuencia(Funcion funcion, const char *inputLista, cons
 
     FrameworkA1::destruir(lista);
     FrameworkA1::destruir(secuencia);
+}
+
+template <typename Funcion>
+void casosMemoriaIntercalar(Funcion funcion)
+{
+    SECTION("both empty") { checkMemoriaDosListas(funcion, "()", "()"); }
+    SECTION("one empty") { checkMemoriaDosListas(funcion, "(1,3,5)", "()"); }
+    SECTION("interleaved") { checkMemoriaDosListas(funcion, "(1,3,5,7,9)", "(2,4,6,8)"); }
+}
+
+template <typename Funcion>
+void casosIntercalar(Funcion funcion)
+{
+    auto check = [funcion](const char *inputLista1, const char *inputLista2, const char *expected)
+    { checkDosListasNuevas(funcion, inputLista1, inputLista2, expected); };
+
+    SECTION("() and ()") { check("()", "()", "()"); }
+    SECTION("(1) and ()") { check("(1)", "()", "(1)"); }
+    SECTION("(1) and (2)") { check("(1)", "(2)", "(1,2)"); }
+    SECTION("(1,3,5,7,9) and (2,4,6,8)") { check("(1,3,5,7,9)", "(2,4,6,8)", "(1,2,3,4,5,6,7,8,9)"); }
+    SECTION("(1,3,5,7,9,9) and (2,2,4,6,8)") { check("(1,3,5,7,9,9)", "(2,2,4,6,8)", "(1,2,2,3,4,5,6,7,8,9,9)"); }
+    SECTION("(100,200,300,400) and same") { check("(100,200,300,400)", "(100,200,300,400)", "(100,100,200,200,300,300,400,400)"); }
+    SECTION("() and (-1,0,1,5)") { check("()", "(-1,0,1,5)", "(-1,0,1,5)"); }
+    SECTION("(19,24,233,2344) and (-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12)") { check("(19,24,233,2344)", "(-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12)", "(-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12,19,24,233,2344)"); }
+    SECTION("(-1,-1,-1) and (-1,-1,-1,-1)") { check("(-1,-1,-1)", "(-1,-1,-1,-1)", "(-1,-1,-1,-1,-1,-1,-1)"); }
+    SECTION("(-4,-1,0,5,7,10,12) and (0,1,1)") { check("(-4,-1,0,5,7,10,12)", "(0,1,1)", "(-4,-1,0,0,1,1,5,7,10,12)"); }
+    SECTION("(2,2) and (2,2)") { check("(2,2)", "(2,2)", "(2,2,2,2)"); }
+}
+
+template <typename Check>
+void casosOrdenamiento(Check check)
+{
+    SECTION("()") { check("()", "()"); }
+    SECTION("(4)") { check("(4)", "(4)"); }
+    SECTION("(1,1,1)") { check("(1,1,1)", "(1,1,1)"); }
+    SECTION("(1,2,3)") { check("(1,2,3)", "(1,2,3)"); }
+    SECTION("(1,4,2)") { check("(1,4,2)", "(1,2,4)"); }
+    SECTION("(2,3,1)") { check("(2,3,1)", "(1,2,3)"); }
+    SECTION("(-2,-3,-1)") { check("(-2,-3,-1)", "(-3,-2,-1)"); }
+    SECTION("(1,1,4,1,3,8)") { check("(1,1,4,1,3,8)", "(1,1,1,3,4,8)"); }
+    SECTION("(-2,3,1)") { check("(-2,3,1)", "(-2,1,3)"); }
+    SECTION("(3,5,2,1,0)") { check("(3,5,2,1,0)", "(0,1,2,3,5)"); }
+    SECTION("(9,2,2,5,1)") { check("(9,2,2,5,1)", "(1,2,2,5,9)"); }
+    SECTION("(3,1,-1,1,0)") { check("(3,1,-1,1,0)", "(-1,0,1,1,3)"); }
+    SECTION("(10..-2)") { check("(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
+    SECTION("(7,3,7,10,-1,1,-6,0,-10,2,1,2)") { check("(7,3,7,10,-1,1,-6,0,-10,2,1,2)", "(-10,-6,-1,0,1,1,2,2,3,7,7,10)"); }
+    SECTION("(10..-2)-duplicate") { check("(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
+    SECTION("(8,7,5,2,-3,-1)") { check("(8,7,5,2,-3,-1)", "(-3,-1,2,5,7,8)"); }
+    SECTION("(1,2,0,10,3,4)") { check("(1,2,0,10,3,4)", "(0,1,2,3,4,10)"); }
+    SECTION("(1,2,4,3)") { check("(1,2,4,3)", "(1,2,3,4)"); }
+    SECTION("(-2,0,3,1,1)") { check("(-2,0,3,1,1)", "(-2,0,1,1,3)"); }
 }
 
 TEST_CASE("PruebaInvertirParcial memory cases", "[PruebaInvertirParcial][memory][file:listas]")
@@ -279,25 +308,8 @@ TEST_CASE("PruebaListaOrdenadaInsertionSort memory cases", "[PruebaListaOrdenada
 
 TEST_CASE("PruebaListaOrdenadaInsertionSort cases", "[PruebaListaOrdenadaInsertionSort][file:listas]")
 {
-    SECTION("()") { checkListaNueva(listaOrdenadaInsertionSort, "()", "()"); }
-    SECTION("(4)") { checkListaNueva(listaOrdenadaInsertionSort, "(4)", "(4)"); }
-    SECTION("(1,1,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,1,1)", "(1,1,1)"); }
-    SECTION("(1,2,3)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,2,3)", "(1,2,3)"); }
-    SECTION("(1,4,2)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,4,2)", "(1,2,4)"); }
-    SECTION("(2,3,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(2,3,1)", "(1,2,3)"); }
-    SECTION("(-2,-3,-1)") { checkListaNueva(listaOrdenadaInsertionSort, "(-2,-3,-1)", "(-3,-2,-1)"); }
-    SECTION("(1,1,4,1,3,8)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,1,4,1,3,8)", "(1,1,1,3,4,8)"); }
-    SECTION("(-2,3,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(-2,3,1)", "(-2,1,3)"); }
-    SECTION("(3,5,2,1,0)") { checkListaNueva(listaOrdenadaInsertionSort, "(3,5,2,1,0)", "(0,1,2,3,5)"); }
-    SECTION("(9,2,2,5,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(9,2,2,5,1)", "(1,2,2,5,9)"); }
-    SECTION("(3,1,-1,1,0)") { checkListaNueva(listaOrdenadaInsertionSort, "(3,1,-1,1,0)", "(-1,0,1,1,3)"); }
-    SECTION("(10..-2)") { checkListaNueva(listaOrdenadaInsertionSort, "(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
-    SECTION("(7,3,7,10,-1,1,-6,0,-10,2,1,2)") { checkListaNueva(listaOrdenadaInsertionSort, "(7,3,7,10,-1,1,-6,0,-10,2,1,2)", "(-10,-6,-1,0,1,1,2,2,3,7,7,10)"); }
-    SECTION("(10..-2)-duplicate") { checkListaNueva(listaOrdenadaInsertionSort, "(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
-    SECTION("(8,7,5,2,-3,-1)") { checkListaNueva(listaOrdenadaInsertionSort, "(8,7,5,2,-3,-1)", "(-3,-1,2,5,7,8)"); }
-    SECTION("(1,2,0,10,3,4)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,2,0,10,3,4)", "(0,1,2,3,4,10)"); }
-    SECTION("(1,2,4,3)") { checkListaNueva(listaOrdenadaInsertionSort, "(1,2,4,3)", "(1,2,3,4)"); }
-    SECTION("(-2,0,3,1,1)") { checkListaNueva(listaOrdenadaInsertionSort, "(-2,0,3,1,1)", "(-2,0,1,1,3)"); }
+    casosOrdenamiento([](const char *input, const char *expected)
+                       { checkListaNueva(listaOrdenadaInsertionSort, input, expected); });
 }
 
 TEST_CASE("PruebaListaOrdenadaSelectionSort memory cases", "[PruebaListaOrdenadaSelectionSort][memory][file:listas]")
@@ -309,81 +321,28 @@ TEST_CASE("PruebaListaOrdenadaSelectionSort memory cases", "[PruebaListaOrdenada
 
 TEST_CASE("PruebaListaOrdenadaSelectionSort cases", "[PruebaListaOrdenadaSelectionSort][file:listas]")
 {
-    auto check = [](const char *inputLista, const char *expected)
-    { checkListaModificada(listaOrdenadaSelectionSort, inputLista, expected); };
-
-    SECTION("()") { check("()", "()"); }
-    SECTION("(4)") { check("(4)", "(4)"); }
-    SECTION("(1,1,1)") { check("(1,1,1)", "(1,1,1)"); }
-    SECTION("(1,2,3)") { check("(1,2,3)", "(1,2,3)"); }
-    SECTION("(1,4,2)") { check("(1,4,2)", "(1,2,4)"); }
-    SECTION("(2,3,1)") { check("(2,3,1)", "(1,2,3)"); }
-    SECTION("(-2,-3,-1)") { check("(-2,-3,-1)", "(-3,-2,-1)"); }
-    SECTION("(1,1,4,1,3,8)") { check("(1,1,4,1,3,8)", "(1,1,1,3,4,8)"); }
-    SECTION("(-2,3,1)") { check("(-2,3,1)", "(-2,1,3)"); }
-    SECTION("(3,5,2,1,0)") { check("(3,5,2,1,0)", "(0,1,2,3,5)"); }
-    SECTION("(9,2,2,5,1)") { check("(9,2,2,5,1)", "(1,2,2,5,9)"); }
-    SECTION("(3,1,-1,1,0)") { check("(3,1,-1,1,0)", "(-1,0,1,1,3)"); }
-    SECTION("(10..-2)") { check("(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
-    SECTION("(7,3,7,10,-1,1,-6,0,-10,2,1,2)") { check("(7,3,7,10,-1,1,-6,0,-10,2,1,2)", "(-10,-6,-1,0,1,1,2,2,3,7,7,10)"); }
-    SECTION("(10..-2)-duplicate") { check("(10,9,8,7,6,5,4,3,2,1,0,-1,-2)", "(-2,-1,0,1,2,3,4,5,6,7,8,9,10)"); }
-    SECTION("(8,7,5,2,-3,-1)") { check("(8,7,5,2,-3,-1)", "(-3,-1,2,5,7,8)"); }
-    SECTION("(1,2,0,10,3,4)") { check("(1,2,0,10,3,4)", "(0,1,2,3,4,10)"); }
-    SECTION("(1,2,4,3)") { check("(1,2,4,3)", "(1,2,3,4)"); }
-    SECTION("(-2,0,3,1,1)") { check("(-2,0,3,1,1)", "(-2,0,1,1,3)"); }
+    casosOrdenamiento([](const char *input, const char *expected)
+                       { checkListaModificada(listaOrdenadaSelectionSort, input, expected); });
 }
 
 TEST_CASE("PruebaIntercalarIter memory cases", "[PruebaIntercalarIter][memory][file:listas]")
 {
-    auto check = [](const char *inputLista1, const char *inputLista2)
-    { checkMemoriaDosListas(intercalarIter, inputLista1, inputLista2); };
-
-    SECTION("() and ()") { check("()", "()"); }
-    SECTION("(1,3,5) and ()") { check("(1,3,5)", "()"); }
-    SECTION("(1,3,5,7,9) and (2,4,6,8)") { check("(1,3,5,7,9)", "(2,4,6,8)"); }
+    casosMemoriaIntercalar(intercalarIter);
 }
 
 TEST_CASE("PruebaIntercalarIter cases", "[PruebaIntercalarIter][file:listas]")
 {
-    auto check = [](const char *inputLista1, const char *inputLista2, const char *expected)
-    { checkDosListasNuevas(intercalarIter, inputLista1, inputLista2, expected); };
-
-    SECTION("() and ()") { check("()", "()", "()"); }
-    SECTION("(1) and ()") { check("(1)", "()", "(1)"); }
-    SECTION("(1) and (2)") { check("(1)", "(2)", "(1,2)"); }
-    SECTION("(1,3,5,7,9) and (2,4,6,8)") { check("(1,3,5,7,9)", "(2,4,6,8)", "(1,2,3,4,5,6,7,8,9)"); }
-    SECTION("(1,3,5,7,9,9) and (2,2,4,6,8)") { check("(1,3,5,7,9,9)", "(2,2,4,6,8)", "(1,2,2,3,4,5,6,7,8,9,9)"); }
-    SECTION("(100,200,300,400) and same") { check("(100,200,300,400)", "(100,200,300,400)", "(100,100,200,200,300,300,400,400)"); }
-    SECTION("() and (-1,0,1,5)") { check("()", "(-1,0,1,5)", "(-1,0,1,5)"); }
-    SECTION("(19,24,233,2344) and (-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12)") { check("(19,24,233,2344)", "(-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12)", "(-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12,19,24,233,2344)"); }
-    SECTION("(-1,-1,-1) and (-1,-1,-1,-1)") { check("(-1,-1,-1)", "(-1,-1,-1,-1)", "(-1,-1,-1,-1,-1,-1,-1)"); }
-    SECTION("(-4,-1,0,5,7,10,12) and (0,1,1)") { check("(-4,-1,0,5,7,10,12)", "(0,1,1)", "(-4,-1,0,0,1,1,5,7,10,12)"); }
-    SECTION("(2,2) and (2,2)") { check("(2,2)", "(2,2)", "(2,2,2,2)"); }
+    casosIntercalar(intercalarIter);
 }
 
 TEST_CASE("PruebaIntercalarRec memory cases", "[PruebaIntercalarRec][memory][file:listas]")
 {
-    SECTION("both empty") { checkMemoriaDosListas(intercalarRec, "()", "()"); }
-    SECTION("one empty") { checkMemoriaDosListas(intercalarRec, "(1,3,5)", "()"); }
-    SECTION("interleaved") { checkMemoriaDosListas(intercalarRec, "(1,3,5,7,9)", "(2,4,6,8)"); }
+    casosMemoriaIntercalar(intercalarRec);
 }
 
 TEST_CASE("PruebaIntercalarRec cases", "[PruebaIntercalarRec][file:listas]")
 {
-    auto check = [](const char *inputLista1, const char *inputLista2, const char *expected)
-    { checkDosListasNuevas(intercalarRec, inputLista1, inputLista2, expected); };
-
-    SECTION("() and ()") { check("()", "()", "()"); }
-    SECTION("(1) and ()") { check("(1)", "()", "(1)"); }
-    SECTION("(1) and (2)") { check("(1)", "(2)", "(1,2)"); }
-    SECTION("(1,3,5,7,9) and (2,4,6,8)") { check("(1,3,5,7,9)", "(2,4,6,8)", "(1,2,3,4,5,6,7,8,9)"); }
-    SECTION("(1,3,5,7,9,9) and (2,2,4,6,8)") { check("(1,3,5,7,9,9)", "(2,2,4,6,8)", "(1,2,2,3,4,5,6,7,8,9,9)"); }
-    SECTION("(100,200,300,400) and same") { check("(100,200,300,400)", "(100,200,300,400)", "(100,100,200,200,300,300,400,400)"); }
-    SECTION("() and (-1,0,1,5)") { check("()", "(-1,0,1,5)", "(-1,0,1,5)"); }
-    SECTION("(19,24,233,2344) and (-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12)") { check("(19,24,233,2344)", "(-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12)", "(-1222,-129,-12,0,0,0,0,0,0,1,2,3,4,12,19,24,233,2344)"); }
-    SECTION("(-1,-1,-1) and (-1,-1,-1,-1)") { check("(-1,-1,-1)", "(-1,-1,-1,-1)", "(-1,-1,-1,-1,-1,-1,-1)"); }
-    SECTION("(-4,-1,0,5,7,10,12) and (0,1,1)") { check("(-4,-1,0,5,7,10,12)", "(0,1,1)", "(-4,-1,0,0,1,1,5,7,10,12)"); }
-    SECTION("(2,2) and (2,2)") { check("(2,2)", "(2,2)", "(2,2,2,2)"); }
+    casosIntercalar(intercalarRec);
 }
 
 TEST_CASE("PruebaInsComFin memory cases", "[PruebaInsComFin][memory][file:listas]")
