@@ -8,7 +8,9 @@ namespace {
 class GradingReporter final : public Catch::StreamingReporterBase {
 public:
     explicit GradingReporter(Catch::ReporterConfig&& config)
-        : StreamingReporterBase(CATCH_MOVE(config)) {}
+        : StreamingReporterBase(CATCH_MOVE(config)) {
+        m_preferences.shouldRedirectStdOut = true;
+    }
 
     static std::string getDescription() {
         return "Prints only the percentage of passing test cases";
