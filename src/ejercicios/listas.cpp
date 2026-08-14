@@ -1,68 +1,73 @@
 #include "listas.hpp"
 
-NodoLista* invertirParcial(NodoLista* l) 
+NodoLista *invertirParcial(NodoLista *l)
 {
 	// IMPLEMENTAR SOLUCION
-	return nullptr;
+	throw NoImplementado;
 }
 
-void eliminarNesimoDesdeElFinal(NodoLista*& lista, int &n) 
+void eliminarNesimoDesdeElFinal(NodoLista *&lista, int &n)
 {
 	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
 }
 
-NodoLista* listaOrdenadaInsertionSort(NodoLista* l) 
+NodoLista *listaOrdenadaInsertionSort(NodoLista *l)
 {
 	// IMPLEMENTAR SOLUCION
-	return nullptr;
+	throw NoImplementado;
 }
 
-void listaOrdenadaSelectionSort(NodoLista*& l)
+void listaOrdenadaSelectionSort(NodoLista *&l)
 {
 	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
 }
 
-NodoLista* intercalarIter(NodoLista* l1, NodoLista* l2)
+NodoLista *intercalarIter(NodoLista *l1, NodoLista *l2)
 {
 	// IMPLEMENTAR SOLUCION
-	return nullptr;
+	throw NoImplementado;
 }
 
-NodoLista* intercalarRec(NodoLista* l1, NodoLista* l2)
+NodoLista *intercalarRec(NodoLista *l1, NodoLista *l2)
 {
 	// IMPLEMENTAR SOLUCION
-	return nullptr;
+	throw NoImplementado;
 }
 
-NodoLista* insComFin(NodoLista* l, int x)
+NodoLista *insComFin(NodoLista *l, int x)
 {
 	// IMPLEMENTAR SOLUCION
-	return nullptr;
+	throw NoImplementado;
 }
 
-NodoLista* exor(NodoLista* l1, NodoLista* l2)
+NodoLista *exor(NodoLista *l1, NodoLista *l2)
 {
 	// IMPLEMENTAR SOLUCION
-	return nullptr;
+	throw NoImplementado;
 }
 
-void eliminarDuplicadosListaOrdenadaDos(NodoLista*& l) 
+void eliminarDuplicadosListaOrdenadaDos(NodoLista *&l)
 {
 	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
 }
 
-bool palindromo(NodoLista* l)
+bool palindromo(NodoLista *l)
 {
 	// IMPLEMENTAR SOLUCION
-	return false;
+	throw NoImplementado;
 }
 
-void eliminarSecuencia(NodoLista* &l, NodoLista* secuencia) 
+void eliminarSecuencia(NodoLista *&l, NodoLista *secuencia)
 {
 	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
 }
 
-void moverNodo(NodoLista* &lista, unsigned int inicial, unsigned int final)
+void moverNodo(NodoLista *&lista, unsigned int inicial, unsigned int final)
 {
 	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
 }

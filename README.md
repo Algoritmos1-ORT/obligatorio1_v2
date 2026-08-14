@@ -4,13 +4,23 @@ Primer obligatorio de la materia **Estructuras de Datos y Algoritmos 1**, Facult
 
 ## Archivos a completar
 
-El obligatorio tiene _stubs_ (métodos sin código) que deben ser completados por el o la estudiante, en la carpeta [src/ejercicios](./src/ejercicios/). Cada archivo tiene su propia entrega.
+El obligatorio tiene _stubs_ que deben ser completados por el o la estudiante, en la carpeta [src/ejercicios](./src/ejercicios/). Cada archivo tiene su propia entrega.
+
+En concreto, hay que reemplazar el texto:
+
+```cpp
+// IMPLEMENTAR SOLUCION
+throw NoImplementado;
+```
+
+por la solución.
 
 * [comienzo.cpp](./src/ejercicios/comienzo.cpp): ejercicios básicos de C y de ordenación.
 * [listas.cpp](./src/ejercicios/listas.cpp): ejercicios de listas simplemente enlazadas.
 * [arboles.cpp](./src/ejercicios/arboles.cpp): ejercicios de árboles binarios y árboles generales.
 
 Cada archivo de ejercicios tiene su definición en el directorio [include/ejercicios](./include/ejercicios/), donde en el comentario precediendo la declaración de cada función se encuentra la letra detallando lo esperado.
+
 
 > [!CAUTION]
 > Cada entrega incluye únicamente uno de los archivos indicados. Cada
