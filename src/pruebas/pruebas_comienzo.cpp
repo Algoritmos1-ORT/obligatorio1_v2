@@ -5,6 +5,7 @@
 #include "nanobench.h"
 
 #include "comienzo.hpp"
+#include "check_resultado.hpp"
 #include "func_aux.hpp"
 #include "mem_tracking_fixture.hpp"
 
@@ -31,14 +32,9 @@ void checkVectorIntModificado(Funcion funcion, const char *input, const std::str
 
     funcion(vector, largo);
     bool iguales = FrameworkA1::sonIguales(vector, esperado, largoEsperado);
-    if (!iguales)
-    {
-        char *got = FrameworkA1::serializar(vector, largo);
-        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-        CHECK(true);
+    checkResultadoSerializado(iguales, vector, expected,
+                              [largo](int *resultado)
+                              { return FrameworkA1::serializar(resultado, largo); });
     FrameworkA1::destruir(vector);
     FrameworkA1::destruir(esperado);
 }
@@ -49,7 +45,8 @@ TEST_CASE("PruebaOrdenarVecInt memory cases", "[PruebaOrdenarVecInt][memory][fil
     {
         int largo;
         int *vector = (int *)FrameworkA1::parsearColeccion(input, largo);
-        checkMemoriaEjecucion([&] { ordenarVecInt(vector, largo); });
+        checkMemoriaEjecucion([&]
+                              { ordenarVecInt(vector, largo); });
         FrameworkA1::destruir(vector);
     };
     SECTION("empty") { check("[]"); }
@@ -65,10 +62,9 @@ TEST_CASE("PruebaIntercalarVector memory cases", "[PruebaIntercalarVector][memor
         int *vector1 = (int *)FrameworkA1::parsearColeccion(input1, largo1);
         int *vector2 = (int *)FrameworkA1::parsearColeccion(input2, largo2);
         checkMemoriaEjecucion([&]
-        {
+                              {
             int *resultado = intercalarVector(vector1, vector2, largo1, largo2);
-            FrameworkA1::destruir(resultado);
-        });
+            FrameworkA1::destruir(resultado); });
         FrameworkA1::destruir(vector1);
         FrameworkA1::destruir(vector2);
     };
@@ -84,7 +80,8 @@ TEST_CASE("PruebaSubconjuntoVector memory cases", "[PruebaSubconjuntoVector][mem
         int largo1, largo2;
         int *vector1 = (int *)FrameworkA1::parsearColeccion(input1, largo1);
         int *vector2 = (int *)FrameworkA1::parsearColeccion(input2, largo2);
-        checkMemoriaEjecucion([&] { (void)subconjuntoVector(vector1, vector2, largo1, largo2); });
+        checkMemoriaEjecucion([&]
+                              { (void)subconjuntoVector(vector1, vector2, largo1, largo2); });
         FrameworkA1::destruir(vector1);
         FrameworkA1::destruir(vector2);
     };
@@ -99,10 +96,9 @@ TEST_CASE("PruebaInvertirCase memory cases", "[PruebaInvertirCase][memory][file:
     {
         char *copia = FrameworkA1::copioString(input);
         checkMemoriaEjecucion([&]
-        {
+                              {
             char *resultado = invertirCase(copia);
-            delete[] resultado;
-        });
+            delete[] resultado; });
         delete[] copia;
     };
     SECTION("empty") { check(""); }
@@ -117,7 +113,8 @@ TEST_CASE("PruebaOcurrenciasSubstring memory cases", "[PruebaOcurrenciasSubstrin
         int largo;
         char **vector = (char **)FrameworkA1::parsearColeccion(input, largo);
         char *sub = FrameworkA1::copioString(substring);
-        checkMemoriaEjecucion([&] { (void)ocurrenciasSubstring(vector, largo, sub); });
+        checkMemoriaEjecucion([&]
+                              { (void)ocurrenciasSubstring(vector, largo, sub); });
         FrameworkA1::destruir(vector, largo);
         delete[] sub;
     };
@@ -133,10 +130,9 @@ TEST_CASE("PruebaOrdenarVecStr memory cases", "[PruebaOrdenarVecStr][memory][fil
         int largo;
         char **vector = (char **)FrameworkA1::parsearColeccion(input, largo);
         checkMemoriaEjecucion([&]
-        {
+                              {
             char **resultado = ordenarVecStrings(vector, largo);
-            FrameworkA1::destruir(resultado, largo);
-        });
+            FrameworkA1::destruir(resultado, largo); });
         FrameworkA1::destruir(vector, largo);
     };
     SECTION("empty") { check("[]"); }
@@ -260,14 +256,9 @@ TEST_CASE("PruebaIntercalarVector cases", "[PruebaIntercalarVector][file:comienz
         int *exp = (int *)FrameworkA1::parsearColeccion(expected.c_str(), lExp);
         int *res = intercalarVector(v1, v2, l1, l2);
         bool ok = FrameworkA1::sonIguales(res, exp, lExp);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(res, l1 + l2);
-            FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
-            delete[] got;
-        }
-        else
-            CHECK(true);
+        checkResultadoSerializado(ok, res, expected,
+                                  [largo = l1 + l2](int *resultado)
+                                  { return FrameworkA1::serializar(resultado, largo); });
 
         FrameworkA1::destruir(v1);
         FrameworkA1::destruir(v2);
@@ -367,8 +358,7 @@ TEST_CASE("PruebaInvertirCase cases", "[PruebaInvertirCase][file:comienzo]")
         bool ok = FrameworkA1::sonIguales(res, expected);
         if (!ok)
         {
-            std::ostringstream oss;
-            FAIL_CHECK("Expected: \"" << expected << "\" Received: \"" << res << "\"");
+            FAIL_CHECK("Esperado: \"" << expected << "\" -- Recibido: \"" << (res ? res : "NULL") << "\"");
         }
         else
             CHECK(true);
@@ -426,14 +416,9 @@ TEST_CASE("PruebaOrdenarVecStr cases", "[PruebaOrdenarVecStr][file:comienzo]")
 
         char **res = ordenarVecStrings(vec, l);
         bool ok = FrameworkA1::sonIguales(res, exp, le);
-        if (!ok)
-        {
-            char *got = FrameworkA1::serializar(res, l);
-            FAIL_CHECK("Expected: " << expectedStr << " Received: " << got);
-            delete[] got;
-        }
-        else
-            CHECK(true);
+        checkResultadoSerializado(ok, res, expectedStr,
+                                  [l](char **resultado)
+                                  { return FrameworkA1::serializar(resultado, l); });
         FrameworkA1::destruir(vec, l);
         FrameworkA1::destruir(copia, l);
         FrameworkA1::destruir(exp, le);
@@ -461,14 +446,9 @@ TEST_CASE("PruebaSplitStr cases", "[PruebaSplitStr][file:comienzo]")
         int lo;
         char **got = splitStr(inCopy, sep, lo);
         bool ok = (le == lo) && FrameworkA1::sonIguales(got, exp, le);
-        if (!ok)
-        {
-            char *sGot = FrameworkA1::serializar(got, lo);
-            FAIL_CHECK("Expected: " << expected << " Received: " << sGot);
-            delete[] sGot;
-        }
-        else
-            CHECK(true);
+        checkResultadoSerializado(ok, got, expected,
+                                  [lo](char **resultado)
+                                  { return FrameworkA1::serializar(resultado, lo); });
         FrameworkA1::destruir(got, lo);
         FrameworkA1::destruir(exp, le);
         delete[] inCopy;
