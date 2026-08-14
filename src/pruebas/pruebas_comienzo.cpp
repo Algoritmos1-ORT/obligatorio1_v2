@@ -9,13 +9,26 @@
 #include "func_aux.hpp"
 #include "mem_tracking_fixture.hpp"
 
+class RedireccionCout
+{
+    std::streambuf *anterior;
+
+public:
+    explicit RedireccionCout(std::ostream &destino)
+        : anterior(std::cout.rdbuf(destino.rdbuf())) {}
+
+    ~RedireccionCout()
+    {
+        std::cout.rdbuf(anterior);
+    }
+};
+
 template <typename Funcion>
 void checkSalida(Funcion funcion, const std::string &expected)
 {
     std::ostringstream salida;
-    auto anterior = std::cout.rdbuf(salida.rdbuf());
+    RedireccionCout redireccion(salida);
     funcion();
-    std::cout.rdbuf(anterior);
 
     std::string resultado = salida.str();
     if (!resultado.empty() && resultado.back() == '\n')
