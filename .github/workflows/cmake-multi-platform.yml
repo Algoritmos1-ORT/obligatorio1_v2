@@ -32,18 +32,23 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
+            executable: Debug/obligatorio1.exe
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
+            executable: obligatorio1
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
+            executable: obligatorio1
           - os: macos-latest
             c_compiler: gcc
             cpp_compiler: g++
+            executable: obligatorio1
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
+            executable: obligatorio1
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -79,4 +84,9 @@ jobs:
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - name: Run
-      run: ${{ steps.strings.outputs.build-output-dir }}/obligatorio1 --reporter compact
+      shell: bash
+      run: |
+        if "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.executable }}" --reporter compact; then
+          echo "Expected the tests to fail, but they passed."
+          exit 1
+        fi
