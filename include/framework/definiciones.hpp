@@ -6,15 +6,18 @@ using namespace std;
 #include <string.h>
 #include <assert.h>
 
+inline constexpr char NoImplementado[] = "Implementar";
 
-struct NodoLista {
+struct NodoLista
+{
 	int dato;
 	NodoLista *sig;
 	NodoLista() : dato(0), sig(nullptr) {}
 	NodoLista(int d) : dato(d), sig(nullptr) {}
 };
 
-struct NodoAB {
+struct NodoAB
+{
 	int dato;
 	NodoAB *izq;
 	NodoAB *der;
@@ -22,7 +25,8 @@ struct NodoAB {
 	NodoAB(int d) : dato(d), izq(nullptr), der(nullptr) {}
 };
 
-struct NodoAG {
+struct NodoAG
+{
 	int dato;
 	NodoAG *ph;
 	NodoAG *sh;
@@ -30,7 +34,8 @@ struct NodoAG {
 	NodoAG(int d) : dato(d), ph(nullptr), sh(nullptr) {}
 };
 
-struct NodoListaDobleDato {
+struct NodoListaDobleDato
+{
 	int dato1;
 	int dato2;
 	NodoListaDobleDato *sig;
@@ -38,7 +43,8 @@ struct NodoListaDobleDato {
 	NodoListaDobleDato(int d1, int d2) : dato1(d1), dato2(d2), sig(nullptr) {}
 };
 
-struct NodoABDobleDato {
+struct NodoABDobleDato
+{
 	int dato1;
 	int dato2;
 	NodoABDobleDato *izq;

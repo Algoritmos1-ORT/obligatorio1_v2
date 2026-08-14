@@ -1,19 +1,15 @@
 #include <sstream>
 #include "catch_amalgamated.hpp"
 #include "ejercicios/listas.hpp"
+#include "check_resultado.hpp"
 #include "func_aux.hpp"
 #include "mem_tracking_fixture.hpp"
 
 void checkListasIguales(NodoLista *resultado, NodoLista *esperado, const char *esperadoTexto)
 {
-    if (!FrameworkA1::sonIgualesDatosForma(resultado, esperado))
-    {
-        char *got = FrameworkA1::serializar(resultado);
-        FAIL_CHECK("Esperado: " << esperadoTexto << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-        CHECK(true);
+    checkResultadoSerializado(FrameworkA1::sonIgualesDatosForma(resultado, esperado),
+                              resultado, esperadoTexto,
+                              [](NodoLista *lista) { return FrameworkA1::serializar(lista); });
 }
 
 template <typename Funcion>

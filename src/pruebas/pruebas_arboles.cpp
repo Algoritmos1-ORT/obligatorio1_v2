@@ -1,6 +1,7 @@
 #include <sstream>
 #include "catch_amalgamated.hpp"
 #include "ejercicios/arboles.hpp"
+#include "check_resultado.hpp"
 #include "func_aux.hpp"
 #include "mem_tracking_fixture.hpp"
 
@@ -23,14 +24,8 @@ void checkArbolLista(Funcion funcion, const char *inputTree, const char *expecte
     NodoLista *resultado = funcion(arbol);
     auto iguales = FrameworkA1::sonIgualesDatosForma(resultado, solucion);
 
-    if (!iguales)
-    {
-        char *got = FrameworkA1::serializar(resultado);
-        FAIL_CHECK("Esperado: " << expected << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-        CHECK(true);
+    checkResultadoSerializado(iguales, resultado, expected,
+                              [](NodoLista *lista) { return FrameworkA1::serializar(lista); });
     FrameworkA1::destruir(arbol);
     FrameworkA1::destruir(resultado);
     FrameworkA1::destruir(solucion);
@@ -91,14 +86,8 @@ void checkArbolListaValor(Funcion funcion, const char *inputTree, const char *in
 template <typename Nodo, typename Comparador>
 void checkArbolesIguales(Nodo *resultado, Nodo *esperado, const char *esperadoTexto, Comparador comparar)
 {
-    if (!comparar(resultado, esperado))
-    {
-        char *got = FrameworkA1::serializar(resultado);
-        FAIL_CHECK("Esperado: " << esperadoTexto << " — Recibido: " << got);
-        delete[] got;
-    }
-    else
-        CHECK(true);
+    checkResultadoSerializado(comparar(resultado, esperado), resultado, esperadoTexto,
+                              [](Nodo *arbol) { return FrameworkA1::serializar(arbol); });
 }
 
 #define MEMORY_CASES(tipo, nombre, funcion, vacio, uno, varios)             \

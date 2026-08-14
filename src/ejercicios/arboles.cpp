@@ -1,93 +1,109 @@
 #include "arboles.hpp"
 
-int altura(NodoAB* raiz){
-	// IMPLEMENTAR SOLUCION
-	return 0;
-}
-
-bool sonIguales(NodoAB* p, NodoAB* q) {
-	// IMPLEMENTAR SOLUCION
-	return false;
-}
-
-bool existeCaminoConSuma(NodoAB* raiz, int sum) {
-	// IMPLEMENTAR SOLUCION
-	return false;
-}
-
-bool esArbolBalanceado(NodoAB *raiz) {
-	// IMPLEMENTAR SOLUCION
-	return false;
-}
-
-NodoLista* enNivel(NodoAB *a, int k) {
-	// IMPLEMENTAR SOLUCION
-	return nullptr;
-}
-
-int cantNodosEntreNiveles(NodoAB* a, int desde, int hasta) {
-	// IMPLEMENTAR SOLUCION
-	return 0;
-}
-
-NodoLista* camino(NodoAB *arbol, int x) {
-	// IMPLEMENTAR SOLUCION
-	return nullptr;
-}
-
-NodoAB* invertirHastak(NodoAB* a, int k){
-	// IMPLEMENTAR SOLUCION
-	return nullptr;
-}
-
-void borrarNodoRaiz(NodoAB * & A) {
-	// IMPLEMENTAR SOLUCION
-}
-
-bool sumaABB(NodoAB* a, int n)
+int altura(NodoAB *raiz)
 {
 	// IMPLEMENTAR SOLUCION
-	return false;
+	throw NoImplementado;
 }
 
-int sucesor(NodoAB* a, int n)
+bool sonIguales(NodoAB *p, NodoAB *q)
 {
 	// IMPLEMENTAR SOLUCION
-	return 0;
+	throw NoImplementado;
 }
 
-int nivelMasNodos(NodoAB* raiz, int nivelHasta) {
-	// IMPLEMENTAR SOLUCION
-	return 0;
-}
-
-void borrarPares(NodoAB* & a){
-	// IMPLEMENTAR SOLUCION
-}
-
-int alturaAG(NodoAG* raiz)
+bool existeCaminoConSuma(NodoAB *raiz, int sum)
 {
 	// IMPLEMENTAR SOLUCION
-	return 0;
+	throw NoImplementado;
 }
 
-int sumaPorNiveles(NodoAG* raiz){
+bool esArbolBalanceado(NodoAB *raiz)
+{
 	// IMPLEMENTAR SOLUCION
-	return 0;
+	throw NoImplementado;
+}
+
+NodoLista *enNivel(NodoAB *a, int k)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+int cantNodosEntreNiveles(NodoAB *a, int desde, int hasta)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+NodoLista *camino(NodoAB *arbol, int x)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+NodoAB *invertirHastak(NodoAB *a, int k)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+void borrarNodoRaiz(NodoAB *&A)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+bool sumaABB(NodoAB *a, int n)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+int sucesor(NodoAB *a, int n)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+int nivelMasNodos(NodoAB *raiz, int nivelHasta)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+void borrarPares(NodoAB *&a)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+int alturaAG(NodoAG *raiz)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
+}
+
+int sumaPorNiveles(NodoAG *raiz)
+{
+	// IMPLEMENTAR SOLUCION
+	throw NoImplementado;
 }
 
 bool esPrefijo(NodoAG *a, NodoLista *l)
 {
 	// IMPLEMENTAR SOLUCION
-	return false;
+	throw NoImplementado;
 }
 
-NodoLista* caminoAG(NodoAG *arbolGeneral, int dato) {
+NodoLista *caminoAG(NodoAG *arbolGeneral, int dato)
+{
 	// IMPLEMENTAR SOLUCION
-	return nullptr;
+	throw NoImplementado;
 }
 
-int nivelConMasNodosAG(NodoAG * arbolGeneral) {
+int nivelConMasNodosAG(NodoAG *arbolGeneral)
+{
 	// IMPLEMENTAR SOLUCION
-	return 0;
+	throw NoImplementado;
 }
