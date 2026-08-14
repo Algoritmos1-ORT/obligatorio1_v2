@@ -1,5 +1,44 @@
-# obligatorio1_v2
-Reedición del primer obligatorio
+# obligatorio1 2026 s2
+
+Primer obligatorio de la materia **Estructuras de Datos y Algoritmos 1**, Facultad de Ingeniería, ORT Uruguay.
+
+## Archivos a completar
+
+El obligatorio tiene _stubs_ (métodos sin código) que deben ser completados por el o la estudiante, en la carpeta [src/ejercicios](./src/ejercicios/). Cada archivo tiene su propia entrega.
+
+* [comienzo.cpp](./src/ejercicios/comienzo.cpp): ejercicios básicos de C y de ordenación.
+* [listas.cpp](./src/ejercicios/listas.cpp): ejercicios de listas simplemente enlazadas.
+* [arboles.cpp](./src/ejercicios/arboles.cpp): ejercicios de árboles binarios y árboles generales.
+
+Cada archivo de ejercicios tiene su definición en el directorio [include/ejercicios](./include/ejercicios/), donde en el comentario precediendo la declaración de cada función se encuentra la letra detallando lo esperado.
+
+> [!CAUTION]
+> Cada entrega incluye únicamente uno de los archivos indicados. Cada
+> archivo debe contener todas las funciones necesarias, no se puede usar
+> `#include` (salvo los ya colocados).
+
+## Uso de IA
+
+Las defensas del obligatorio (una por cada entrega) y los parciales son en papel, con lo que el objetivo de estos ejercicios es que puedan adquirir y reproducir los conocimientos. Si la IA genera la respuesta, entonces la posibilidad de que haya adquirido el conocimiento es baja, y redundará en un bajo puntaje. Por ello, su uso debe ser meramente consultivo. Por ejemplo, en vez del siguiente prompt:
+
+> Resuelve el ejercicio tablaDel
+
+Escribir prompts del estilo:
+
+> ¿Cómo hago para iterar desde `desde` hasta `hasta` en C?
+
+## Requisitos
+
+Para compilar el proyecto es necesario contar con:
+ * [CMake](https://cmake.org/)
+ * Compilador de C++
+ * (Opcional pero deseable) Un IDE moderno como Visual Studio Code.
+
+En [el siguiente link](https://code.visualstudio.com/docs/cpp/config-msvc#cpp-articles) pueden encontrar artículos de cómo instalar las distintas herramientas según su plataforma.
+
+> [!CAUTION]
+> Si el archivo que entregan no compila en una versión fresca del proyecto
+> entonces no será tenido en cuenta en la corrección y obtendrá 0 puntos.
 
 ## Compilación con CMake
 
