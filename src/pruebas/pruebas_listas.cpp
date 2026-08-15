@@ -9,7 +9,8 @@ void checkListasIguales(NodoLista *resultado, NodoLista *esperado, const char *e
 {
     checkResultadoSerializado(FrameworkA1::sonIgualesDatosForma(resultado, esperado),
                               resultado, esperadoTexto,
-                              [](NodoLista *lista) { return FrameworkA1::serializar(lista); });
+                              [](NodoLista *lista)
+                              { return FrameworkA1::serializar(lista); });
 }
 
 template <typename Funcion>
@@ -95,13 +96,11 @@ void checkMemoriaDosListas(Funcion funcion, const char *inputLista1, const char 
     NodoLista *lista2 = (NodoLista *)FrameworkA1::parsearColeccion(inputLista2, largo2);
 
     checkMemoriaEjecucion([&]
-    {
+                          {
         NodoLista *resultado = funcion(lista1, lista2);
-        FrameworkA1::destruir(resultado);
-    });
-
-    FrameworkA1::destruir(lista1);
-    FrameworkA1::destruir(lista2);
+        FrameworkA1::destruir(resultado); 
+        FrameworkA1::destruir(lista1);
+        FrameworkA1::destruir(lista2); });
 }
 
 template <typename Funcion>
@@ -150,12 +149,9 @@ void checkMemoriaListaNueva(Funcion funcion, const char *inputLista)
     NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
 
     checkMemoriaEjecucion([&]
-    {
-        NodoLista *resultado = funcion(lista);
-        FrameworkA1::destruir(resultado);
-    });
-
-    FrameworkA1::destruir(lista);
+                          { NodoLista *resultado = funcion(lista);
+                            FrameworkA1::destruir(resultado);
+                            FrameworkA1::destruir(lista); });
 }
 
 template <typename Funcion>
@@ -164,9 +160,9 @@ void checkMemoriaLista(Funcion funcion, const char *inputLista)
     int largo;
     NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largo);
 
-    checkMemoriaEjecucion([&] { funcion(lista); });
-
-    FrameworkA1::destruir(lista);
+    checkMemoriaEjecucion([&]
+                          { funcion(lista); 
+                            FrameworkA1::destruir(lista); });
 }
 
 template <typename Funcion>
@@ -176,10 +172,10 @@ void checkMemoriaListaConSecuencia(Funcion funcion, const char *inputLista, cons
     NodoLista *lista = (NodoLista *)FrameworkA1::parsearColeccion(inputLista, largoLista);
     NodoLista *secuencia = (NodoLista *)FrameworkA1::parsearColeccion(inputSecuencia, largoSecuencia);
 
-    checkMemoriaEjecucion([&] { funcion(lista, secuencia); });
-
-    FrameworkA1::destruir(lista);
-    FrameworkA1::destruir(secuencia);
+    checkMemoriaEjecucion([&]
+                          { funcion(lista, secuencia); 
+                            FrameworkA1::destruir(lista);
+                            FrameworkA1::destruir(secuencia); });
 }
 
 template <typename Funcion>
@@ -266,7 +262,8 @@ TEST_CASE("PruebaInvertirParcial cases", "[PruebaInvertirParcial][file:listas]")
 TEST_CASE("PruebaEliminarNesimoDesdeElFinal memory cases", "[PruebaEliminarNesimoDesdeElFinal][memory][file:listas]")
 {
     auto check = [](const char *input, int n)
-    { checkMemoriaLista([n](NodoLista *&lista) mutable { eliminarNesimoDesdeElFinal(lista, n); }, input); };
+    { checkMemoriaLista([n](NodoLista *&lista) mutable
+                        { eliminarNesimoDesdeElFinal(lista, n); }, input); };
 
     SECTION("empty") { check("()", 1); }
     SECTION("remove head") { check("(1,2,3,4)", 4); }
@@ -305,7 +302,7 @@ TEST_CASE("PruebaListaOrdenadaInsertionSort memory cases", "[PruebaListaOrdenada
 TEST_CASE("PruebaListaOrdenadaInsertionSort cases", "[PruebaListaOrdenadaInsertionSort][file:listas]")
 {
     casosOrdenamiento([](const char *input, const char *expected)
-                       { checkListaNueva(listaOrdenadaInsertionSort, input, expected); });
+                      { checkListaNueva(listaOrdenadaInsertionSort, input, expected); });
 }
 
 TEST_CASE("PruebaListaOrdenadaSelectionSort memory cases", "[PruebaListaOrdenadaSelectionSort][memory][file:listas]")
@@ -318,7 +315,7 @@ TEST_CASE("PruebaListaOrdenadaSelectionSort memory cases", "[PruebaListaOrdenada
 TEST_CASE("PruebaListaOrdenadaSelectionSort cases", "[PruebaListaOrdenadaSelectionSort][file:listas]")
 {
     casosOrdenamiento([](const char *input, const char *expected)
-                       { checkListaModificada(listaOrdenadaSelectionSort, input, expected); });
+                      { checkListaModificada(listaOrdenadaSelectionSort, input, expected); });
 }
 
 TEST_CASE("PruebaIntercalarIter memory cases", "[PruebaIntercalarIter][memory][file:listas]")
@@ -344,7 +341,8 @@ TEST_CASE("PruebaIntercalarRec cases", "[PruebaIntercalarRec][file:listas]")
 TEST_CASE("PruebaInsComFin memory cases", "[PruebaInsComFin][memory][file:listas]")
 {
     auto check = [](const char *input, int n)
-    { checkMemoriaListaNueva([n](NodoLista *lista) { return insComFin(lista, n); }, input); };
+    { checkMemoriaListaNueva([n](NodoLista *lista)
+                             { return insComFin(lista, n); }, input); };
 
     SECTION("empty") { check("()", 4); }
     SECTION("single") { check("(5)", 4); }
@@ -472,7 +470,8 @@ TEST_CASE("PruebaEliminarSecuencia cases", "[PruebaEliminarSecuencia][file:lista
 TEST_CASE("PruebaMoverNodo memory cases", "[PruebaMoverNodo][memory][file:listas]")
 {
     auto check = [](const char *input, unsigned int inicial, unsigned int final)
-    { checkMemoriaLista([=](NodoLista *&lista) { moverNodo(lista, inicial, final); }, input); };
+    { checkMemoriaLista([=](NodoLista *&lista)
+                        { moverNodo(lista, inicial, final); }, input); };
 
     SECTION("forward") { check("(1,2,3,4,5)", 1, 5); }
     SECTION("backward") { check("(1,2,3,4,5)", 5, 1); }
