@@ -55,12 +55,6 @@ char *invertirCase(char *str)
 	throw NoImplementado;
 }
 
-int islas(char **mapa, int col, int fil)
-{
-	// IMPLEMENTAR SOLUCION
-	throw NoImplementado;
-}
-
 unsigned int ocurrenciasSubstring(char **vecStr, int largoVecStr, char *substr)
 {
 	// IMPLEMENTAR SOLUCION
