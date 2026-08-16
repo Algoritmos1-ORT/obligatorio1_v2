@@ -52,17 +52,17 @@ En [el siguiente link](https://code.visualstudio.com/docs/cpp/config-msvc#cpp-ar
 
 ## Compilación con CMake
 
-Desde la raíz del proyecto, configurar y compilar:
+Desde la raíz del proyecto, configurar y compilar, ejecutando en una terminal:
 
 ```bash
 cmake -S . -B build
 cmake --build build
 ```
 
-El ejecutable queda disponible en `build/obligatorio1`. Para ejecutarlo:
+El ejecutable queda disponible en `build/Debug/obligatorio1.exe` (o `build/obligatorio1` en Linux o macOS). Para ejecutarlo, escribir en la terminal (o el equivalente en otra plataforma):
 
 ```bash
-./build/obligatorio1
+./build/Debug/obligatorio1.exe
 ```
 
 Para recompilar luego de modificar archivos, basta con ejecutar nuevamente:
@@ -127,32 +127,32 @@ Desde el Visual Studio Code, con las extensiones recomendadas que posiblemente s
 El ejecutable usa Catch2. Sin argumentos ejecuta todas las pruebas:
 
 ```bash
-./build/obligatorio1
+./build/Debug/obligatorio1.exe
 ```
 
 Para ejecutar una prueba específica, indicar su etiqueta o su nombre. Por ejemplo:
 
 ```bash
-./build/obligatorio1 "[PruebaSuma]"
+./build/Debug/obligatorio1.exe "[PruebaSuma]"
 ```
 
 Para ejecutar todas las pruebas asociadas a un archivo, usar la etiqueta `file`:
 
 ```bash
-./build/obligatorio1 "[file:listas]"
-./build/obligatorio1 "[file:arboles]"
-./build/obligatorio1 "[file:comienzo]"
+./build/Debug/obligatorio1.exe "[file:listas]"
+./build/Debug/obligatorio1.exe "[file:arboles]"
+./build/Debug/obligatorio1.exe "[file:comienzo]"
 ```
 
 Por defecto se usa el reporte de consola. Para una salida compacta, agregar la opción `--reporter`:
 
 ```bash
-./build/obligatorio1 --reporter compact
+./build/Debug/obligatorio1.exe --reporter compact
 ```
 
 Para obtener únicamente el porcentaje de casos de prueba aprobados, usar el
 reporte `grading`:
 
 ```bash
-./build/obligatorio1 "[file:listas]" --reporter grading
+./build/Debug/obligatorio1.exe "[file:listas]" --reporter grading
 ```
