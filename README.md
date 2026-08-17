@@ -50,7 +50,15 @@ En [el siguiente link](https://code.visualstudio.com/docs/cpp/config-msvc#cpp-ar
 > Si el archivo que entregan no compila en una versión fresca del proyecto
 > entonces no será tenido en cuenta en la corrección y obtendrá 0 puntos.
 
-## Compilación con CMake
+
+## Instalación recomendada en Windows con Visual Studio Code
+
+En [WINDOWS.md](WINDOWS.md) están las instrucciones para poder compilar el proyecto en VSCode, centrado en Windows
+pero muchos de los pasos deberían funcionar también en otras plataformas.
+
+### Alternativas
+
+#### Compilación con CMake
 
 Desde la raíz del proyecto, configurar y compilar, ejecutando en una terminal:
 
@@ -71,7 +79,7 @@ Para recompilar luego de modificar archivos, basta con ejecutar nuevamente:
 cmake --build build
 ```
 
-## Compilación con Docker
+#### Compilación con Docker
 
 El `Dockerfile` incluye CMake, un compilador de C++ y `make` como herramienta de compilación. Primero, crear la imagen desde la raíz del proyecto:
 
@@ -103,7 +111,7 @@ También se puede abrir una terminal dentro del contenedor por si se quiere ejec
 docker run --rm -it -v "$PWD":/workspace obligatorio1
 ```
 
-### Consideración según plataforma
+#### Consideración según plataforma
 
 Estos comandos funcionan en macOS y Linux con una terminal compatible con Bash o Zsh. En Windows se recomienda usar Docker Desktop y PowerShell; para montar el directorio actual, usar `${PWD}`:
 
@@ -115,12 +123,6 @@ docker run --rm -v "${PWD}:/workspace" obligatorio1 ./build-docker/obligatorio1
 ```
 
 En Windows y macOS, Docker Desktop normalmente administra los permisos y Buildx. En Linux, si aparece un error de permiso para `/var/run/docker.sock`, ejecutar Docker con `sudo` o configurar el acceso al grupo `docker` según la instalación local.
-
-## VSCode
-
-Desde el Visual Studio Code, con las extensiones recomendadas que posiblemente sugiera por defecto, se puede hacer compilar, ejecutar, o debuggear con los íconos debajo:
-
-![VSCode tools para CMake](./assets/images/vscode.png)
 
 ## Ejecutar pruebas con Catch2
 
