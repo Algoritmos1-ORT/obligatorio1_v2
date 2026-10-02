@@ -101,6 +101,34 @@ void checkArbolesIguales(Nodo *resultado, Nodo *esperado, const char *esperadoTe
                               [](Nodo *arbol) { return FrameworkA1::serializar(arbol); });
 }
 
+template <typename Funcion>
+void checkABBModificado(Funcion funcion, const char *inputTree, const char *expected)
+{
+    int largo;
+    NodoAB *arbol = static_cast<NodoAB *>(FrameworkA1::parsearColeccion(inputTree, largo));
+    NodoAB *solucion = static_cast<NodoAB *>(FrameworkA1::parsearColeccion(expected, largo));
+    funcion(arbol);
+    checkArbolesIguales(arbol, solucion, expected,
+                       [](NodoAB *a, NodoAB *b) { return FrameworkA1::sonIgualesDatos(a, b); });
+    CHECK(FrameworkA1::esABB(arbol));
+    FrameworkA1::destruir(arbol);
+    FrameworkA1::destruir(solucion);
+}
+
+template <typename Funcion>
+void checkMemoriaABBModificado(Funcion funcion, const char *inputTree)
+{
+    // Incluir los nodos originales en el seguimiento para detectar los que
+    // se desconectan del árbol sin liberarse durante el borrado.
+    checkMemoriaEjecucion([&]
+    {
+        int largo;
+        NodoAB *arbol = static_cast<NodoAB *>(FrameworkA1::parsearColeccion(inputTree, largo));
+        funcion(arbol);
+        FrameworkA1::destruir(arbol);
+    });
+}
+
 #define MEMORY_CASES(tipo, nombre, funcion, vacio, uno, varios)             \
     TEST_CASE(nombre " memory cases", "[" nombre "][memory][file:arboles]") \
     {                                                                       \
@@ -338,21 +366,7 @@ TEST_CASE("PruebaInvertirHastak memory cases", "[PruebaInvertirHastak][memory][f
 TEST_CASE("PruebaBorrarNodoRaiz cases", "[PruebaBorrarNodoRaiz][file:arboles]")
 {
     auto check = [](const char *inputTree, const char *expected)
-    {
-        int largo;
-        NodoAB *arbol = (NodoAB *)FrameworkA1::parsearColeccion(inputTree, largo);
-        NodoAB *solucion = (NodoAB *)FrameworkA1::parsearColeccion(expected, largo);
-        borrarNodoRaiz(arbol);
-        bool esAbb = FrameworkA1::esABB(arbol);
-        checkArbolesIguales(arbol, solucion, expected,
-                             [](NodoAB *a, NodoAB *b) { return FrameworkA1::sonIgualesDatos(a, b); });
-        if (!esAbb)
-            FAIL_CHECK("El resultado no es un ABB");
-        else
-            CHECK(true);
-        FrameworkA1::destruir(arbol);
-        FrameworkA1::destruir(solucion);
-    };
+    { checkABBModificado(borrarNodoRaiz, inputTree, expected); };
 
     SECTION("leaf") { check("{1}", "{}"); }
     SECTION("root-with-right") { check("{1,#,2}", "{2}"); }
@@ -465,6 +479,58 @@ TEST_CASE("PruebaNivelMasNodos cases", "[PruebaNivelMasNodos][file:arboles]")
 }
 
 MEMORY_CASES(NodoAB, "PruebaNivelMasNodos", [](NodoAB *arbol) { (void)nivelMasNodos(arbol, 3); }, "{}", "{1}", "{1,2,3,4,5}")
+
+TEST_CASE("PruebaBorrarPares cases", "[PruebaBorrarPares][file:arboles]")
+{
+    auto check = [](const char *inputTree, const char *expected)
+    { checkABBModificado(borrarPares, inputTree, expected); };
+
+    SECTION("empty") { check("{}", "{}"); }
+    SECTION("single-odd") { check("{3}", "{3}"); }
+    SECTION("single-even") { check("{2}", "{}"); }
+    SECTION("zero") { check("{0}", "{}"); }
+    SECTION("all-odd") { check("{5,3,9,1,#,7,11}", "{5,3,9,1,#,7,11}"); }
+    SECTION("all-even") { check("{8,4,12,2,6,10,14}", "{}"); }
+    SECTION("even-leaves") { check("{5,3,9,2,4,8,10}", "{5,3,9}"); }
+    SECTION("root-with-left") { check("{4,3}", "{3}"); }
+    SECTION("root-with-right") { check("{4,#,5}", "{5}"); }
+    SECTION("root-with-two-children") { check("{4,2,6,1,3,5,7}", "{5,3,7,1}"); }
+    SECTION("even-replacement") { check("{8,3,12,1,6,10,14,#,#,5,7,9,11,13,15}", "{7,3,11,1,5,9,13,#,#,#,#,#,#,#,15}"); }
+    SECTION("skewed-left") { check("{6,5,#,4,#,3,#,2,#,1}", "{5,3,#,1}"); }
+    SECTION("skewed-right") { check("{1,#,2,#,3,#,4,#,5,#,6}", "{1,#,3,#,5}"); }
+    SECTION("negative-and-zero") { check("{0,-3,4,-4,-1,3,6}", "{3,-3,#,#,-1}"); }
+    SECTION("idempotent")
+    {
+        checkABBModificado([](NodoAB *&a) { borrarPares(a); borrarPares(a); },
+                           "{4,2,6,1,3,5,7}", "{5,3,7,1}");
+    }
+}
+
+TEST_CASE("PruebaBorrarPares memory cases", "[PruebaBorrarPares][memory][file:arboles]")
+{
+    auto check = [](const char *inputTree)
+    { checkMemoriaABBModificado(borrarPares, inputTree); };
+
+    SECTION("empty") { check("{}"); }
+    SECTION("single-odd") { check("{3}"); }
+    SECTION("single-even") { check("{2}"); }
+    SECTION("zero") { check("{0}"); }
+    SECTION("all-odd") { check("{5,3,9,1,#,7,11}"); }
+    SECTION("all-even") { check("{8,4,12,2,6,10,14}"); }
+    SECTION("even-leaves") { check("{5,3,9,2,4,8,10}"); }
+    SECTION("root-with-left") { check("{4,3}"); }
+    SECTION("root-with-right") { check("{4,#,5}"); }
+    SECTION("root-with-two-children") { check("{4,2,6,1,3,5,7}"); }
+    SECTION("even-replacement") { check("{8,3,12,1,6,10,14,#,#,5,7,9,11,13,15}"); }
+    SECTION("skewed-left") { check("{6,5,#,4,#,3,#,2,#,1}"); }
+    SECTION("skewed-right") { check("{1,#,2,#,3,#,4,#,5,#,6}"); }
+    SECTION("negative-and-zero") { check("{0,-3,4,-4,-1,3,6}"); }
+    SECTION("repeated")
+    {
+        checkMemoriaABBModificado([](NodoAB *&a) { borrarPares(a); borrarPares(a); },
+                                 "{4,2,6,1,3,5,7}");
+    }
+}
 
 TEST_CASE("PruebaAlturaAG cases", "[PruebaAlturaAG][file:arboles]")
 {
