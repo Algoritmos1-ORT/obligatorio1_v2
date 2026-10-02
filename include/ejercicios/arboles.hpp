@@ -247,9 +247,8 @@ Retorno: 2
 int nivelMasNodos(NodoAB *raiz, int nivelHasta);
 
 /*
-PRE:
-POS: Implemente un procedimiento void borraPares(NodoAB *&arbol); que dado un árbol binario de busqueda
-    a elimine todos los elementos pares del mismo, modificando al árbol pasado por parámetro.
+PRE: `a` es un ABB
+POS: elimina todos los elementos pares del mismo, modificando al árbol pasado por parámetro.
 
 Ejemplos:
 borrarPares({4,2,6,1,3,5,7}) = {5,3,7,1}
