@@ -220,7 +220,7 @@ TEST_CASE("PruebaIntercalarVector cases", "[PruebaIntercalarVector][file:comienz
     SECTION("inter-right-empty") { check("[1,2,3]", "[]", "[1,2,3]"); }
 }
 
-TEST_CASE("PruebaIntercalarVector order", "[PruebaIntercalarVector][file:comienzo]")
+TEST_CASE("PruebaIntercalarVector order", "[PruebaIntercalarVector][file:comienzo][benchmark]")
 {
     auto benchmark = []()
     {
@@ -534,7 +534,7 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort cases", "[PruebaOrdenarVecIntMergeSort][
     SECTION("[-2,0,3,1,1]") { check("[-2,0,3,1,1]", "[-2,0,1,1,3]"); }
 }
 
-TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][file:comienzo]")
+TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][file:comienzo][benchmark]")
 {
     auto benchmark = []()
     {
