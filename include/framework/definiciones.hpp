@@ -5,6 +5,7 @@
 using namespace std;
 #include <string.h>
 #include <assert.h>
+#include <climits>
 
 inline constexpr char NoImplementado[] = "Implementar";
 
