@@ -224,11 +224,16 @@ TEST_CASE("PruebaIntercalarVector order", "[PruebaIntercalarVector][file:comienz
 {
     auto benchmark = []()
     {
+        auto start = std::chrono::steady_clock::now();
+        const auto timeout = std::chrono::seconds(10);
+
         ankerl::nanobench::Bench bench;
         bench.output(nullptr);                             // que no imprima nada
         bench.minEpochTime(std::chrono::milliseconds(10)); // mejoramos la precisión de la medición
+        
         std::vector<int> arr1;
         std::vector<int> arr2;
+
 
         for (uint64_t n = 100; n <= 5'000; n += 200)
         {
@@ -243,6 +248,10 @@ TEST_CASE("PruebaIntercalarVector order", "[PruebaIntercalarVector][file:comienz
                 arr2[i] = i;
             }
 
+            // Timeout
+            if (std::chrono::steady_clock::now() - start > timeout)
+                FAIL("El benchmark superó el timeout de 10 segundos (revisar orden)");
+            
             // Benchmark
             bench.complexityN(arr1.size()).run("IntercalarVector", [&]
                                                {
@@ -538,6 +547,9 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][
 {
     auto benchmark = []()
     {
+        auto start = std::chrono::steady_clock::now();
+        const auto timeout = std::chrono::seconds(14);
+
         ankerl::nanobench::Bench bench;
         bench.output(nullptr);                             // que no imprima nada
         bench.minEpochTime(std::chrono::milliseconds(10)); // mejoramos la precisión de la medición
@@ -550,6 +562,10 @@ TEST_CASE("PruebaOrdenarVecIntMergeSort order", "[PruebaOrdenarVecIntMergeSort][
             arr.resize(n);
             for (int i = 0; i < n; i++)
                 arr[i] = n - i;
+
+            // Timeout
+            if (std::chrono::steady_clock::now() - start > timeout)
+                FAIL("El benchmark superó el timeout de 14 segundos (revisar orden)");
 
             // Benchmark
             bench.complexityN(arr.size()).run("OrdenarVecIntMergeSort", [&]
